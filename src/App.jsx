@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  BookOpen,
   Clipboard,
   Copy,
   Dices,
@@ -642,6 +643,50 @@ const GROUP_ORDER = [
   "outputUse",
 ];
 
+const GUIDE_STEPS = [
+  {
+    title: "1. 스타일 유형을 고르기",
+    body: "처음에는 에디토리얼, K-패션, 올드머니, 리조트룩처럼 원하는 분위기와 가장 가까운 프리셋 하나만 고르면 됩니다.",
+  },
+  {
+    title: "2. 의상을 간단히 조합하기",
+    body: "상의, 하의, 아우터, 신발, 액세서리를 하나씩 고르면 앱이 자연스러운 영어 착장 문장으로 합쳐줍니다.",
+  },
+  {
+    title: "3. 모델과 촬영 설정 다듬기",
+    body: "헤어, 메이크업, 표정, 장소, 조명, 무드를 바꾸면 같은 의상도 전혀 다른 화보처럼 보입니다.",
+  },
+  {
+    title: "4. 생성기 형식 선택 후 복사하기",
+    body: "Midjourney, DALL-E, Stable Diffusion, Flux 중 사용할 도구를 선택하고 프롬프트 복사를 누르면 바로 사용할 수 있습니다.",
+  },
+];
+
+const GUIDE_TERMS = [
+  ["스타일 유형", "전체 이미지의 패션 장르입니다. 초보자는 이 항목을 먼저 고르면 나머지 설정이 쉬워집니다."],
+  ["포즈 / 프레이밍", "전신, 클로즈업, 런웨이처럼 모델이 화면에 잡히는 방식입니다."],
+  ["조명", "이미지의 고급스러움과 분위기를 크게 바꿉니다. 부드러운 느낌은 소프트 스튜디오, 강한 화보감은 패션 플래시가 좋습니다."],
+  ["팔레트", "전체 색감입니다. 차분한 결과는 뉴트럴/뮤트, 강한 결과는 볼드 채도나 딥 주얼톤을 쓰면 됩니다."],
+  ["무드", "이미지가 주는 감정입니다. 우아함, 엣지, 몽환적, 역동적 같은 방향을 정합니다."],
+  ["소재감", "실크, 데님, 레더처럼 옷의 질감이 잘 보이게 만드는 단서입니다."],
+];
+
+const GENERATOR_GUIDE = [
+  ["Midjourney", "화보 감성과 스타일링이 강한 이미지를 만들 때 추천합니다. 비율, 스타일 강도, 변주 값을 함께 씁니다."],
+  ["DALL-E", "자연어 문장을 그대로 넣고 안정적인 이미지를 만들고 싶을 때 좋습니다."],
+  ["Stable Diffusion", "태그형 프롬프트와 네거티브 프롬프트를 함께 쓰는 워크플로에 맞습니다."],
+  ["Flux", "긴 자연어 설명을 잘 따르는 모델에 적합합니다. 현실감과 의상 구조를 강조합니다."],
+];
+
+const STYLE_RECIPES = [
+  ["브랜드 룩북", "미니멀 / 클린 스튜디오 + 전신 스탠딩 + 하이키 + 룩북"],
+  ["SNS 감성 컷", "K-패션 / 모던 코리안 + 카페 + 자연광 + SNS 콘텐츠"],
+  ["강한 캠페인", "스트리트 럭셔리 + 도심 야간 + 패션 플래시 + 광고 캠페인"],
+  ["부드러운 여성복", "발레코어 / 로맨틱 + 파스텔 + 튤/쉬폰 + 몽환적"],
+  ["남성복 화보", "비즈니스 / 포멀 + 블레이저 + 85mm + 당당함"],
+  ["아웃도어 패션", "고프코어 / 아웃도어 + 산악 아웃도어 + 테크니컬 소재 + 역동적"],
+];
+
 function labelFor(group, id, key = "en") {
   return GROUPS[group].opts.find((option) => option.id === id)?.[key] || "";
 }
@@ -662,6 +707,11 @@ function buildOutfitText(outfit) {
 }
 
 export default function App() {
+  const [view, setView] = useState(() =>
+    typeof window !== "undefined" && window.location.hash === "#guide"
+      ? "guide"
+      : "studio"
+  );
   const [selection, setSelection] = useState(INITIAL_SELECTION);
   const [outfit, setOutfit] = useState({
     top: "a crisp white shirt",
@@ -678,6 +728,15 @@ export default function App() {
 
   const activePreset =
     PRESETS.find((preset) => preset.id === selection.preset) || PRESETS[0];
+
+  useEffect(() => {
+    const syncHashView = () => {
+      setView(window.location.hash === "#guide" ? "guide" : "studio");
+    };
+
+    window.addEventListener("hashchange", syncHashView);
+    return () => window.removeEventListener("hashchange", syncHashView);
+  }, []);
 
   const prompt = useMemo(() => {
     const subject = cleanJoin(
@@ -805,6 +864,17 @@ export default function App() {
     setChaos(8);
   };
 
+  const showView = (nextView) => {
+    setView(nextView);
+    if (typeof window === "undefined") return;
+
+    const nextUrl =
+      nextView === "guide"
+        ? "#guide"
+        : `${window.location.pathname}${window.location.search}`;
+    window.history.replaceState(null, "", nextUrl);
+  };
+
   const copyPrompt = async () => {
     const text =
       generator === "sd"
@@ -846,17 +916,39 @@ export default function App() {
           <h1>Fashion Prompt Studio</h1>
         </div>
         <div className="topbar-actions">
-          <button className="icon-button" type="button" onClick={randomize} title="랜덤 조합">
-            <Dices size={18} />
-            <span>랜덤</span>
+          <button
+            className={`icon-button subtle ${view === "guide" ? "is-current" : ""}`}
+            type="button"
+            onClick={() => showView(view === "guide" ? "studio" : "guide")}
+            title={view === "guide" ? "스튜디오로 이동" : "사용가이드 보기"}
+          >
+            <BookOpen size={18} />
+            <span>{view === "guide" ? "스튜디오" : "사용가이드"}</span>
           </button>
-          <button className="icon-button subtle" type="button" onClick={reset} title="초기화">
-            <RotateCcw size={18} />
-            <span>초기화</span>
-          </button>
+          {view === "studio" && (
+            <>
+              <button className="icon-button" type="button" onClick={randomize} title="랜덤 조합">
+                <Dices size={18} />
+                <span>랜덤</span>
+              </button>
+              <button className="icon-button subtle" type="button" onClick={reset} title="초기화">
+                <RotateCcw size={18} />
+                <span>초기화</span>
+              </button>
+            </>
+          )}
         </div>
       </header>
 
+      {view === "guide" ? (
+        <GuidePage
+          onRandom={() => {
+            randomize();
+            showView("studio");
+          }}
+          onStart={() => showView("studio")}
+        />
+      ) : (
       <main className="workspace">
         <section className="control-panel" aria-label="패션 스타일 설정">
           <PanelHeader
@@ -1033,7 +1125,119 @@ export default function App() {
           </div>
         </aside>
       </main>
+      )}
     </div>
+  );
+}
+
+function GuidePage({ onRandom, onStart }) {
+  return (
+    <main className="guide-page">
+      <section className="guide-hero">
+        <p className="eyebrow">Usage guide</p>
+        <h2>처음 쓰는 사람도 1분 안에 패션 프롬프트를 만들 수 있습니다.</h2>
+        <p>
+          이 도구는 패션 화보의 핵심 요소를 버튼으로 조합해 영어 이미지 생성
+          프롬프트로 바꿔줍니다. 스타일을 잘 몰라도 프리셋에서 시작하면 됩니다.
+        </p>
+        <div className="guide-actions">
+          <button className="primary-action" type="button" onClick={onStart}>
+            <Sparkles size={18} />
+            <span>바로 만들기</span>
+          </button>
+          <button className="secondary-action" type="button" onClick={onRandom}>
+            <Dices size={18} />
+            <span>랜덤으로 시작</span>
+          </button>
+        </div>
+      </section>
+
+      <section className="guide-section">
+        <PanelHeader
+          number="01"
+          title="빠른 시작"
+          caption="복잡하게 생각하지 않고 바로 쓰는 순서입니다."
+        />
+        <div className="guide-card-grid">
+          {GUIDE_STEPS.map((item) => (
+            <article className="guide-card" key={item.title}>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="guide-section">
+        <PanelHeader
+          number="02"
+          title="옵션 용어"
+          caption="패션 용어를 몰라도 어떤 버튼을 만져야 하는지 알 수 있게 정리했습니다."
+        />
+        <div className="term-list">
+          {GUIDE_TERMS.map(([term, description]) => (
+            <article className="term-row" key={term}>
+              <strong>{term}</strong>
+              <p>{description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="guide-section">
+        <PanelHeader
+          number="03"
+          title="생성기 선택"
+          caption="어떤 AI 이미지 도구에 넣을지에 따라 출력 형식이 달라집니다."
+        />
+        <div className="generator-guide">
+          {GENERATOR_GUIDE.map(([name, description]) => (
+            <article key={name}>
+              <span>{name}</span>
+              <p>{description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="guide-section">
+        <PanelHeader
+          number="04"
+          title="추천 조합"
+          caption="처음에는 아래 조합을 따라 만든 뒤 한두 항목만 바꿔보세요."
+        />
+        <div className="recipe-grid">
+          {STYLE_RECIPES.map(([title, recipe]) => (
+            <article className="recipe-card" key={title}>
+              <span>{title}</span>
+              <p>{recipe}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="guide-section guide-faq">
+        <PanelHeader
+          number="05"
+          title="작업 팁"
+          caption="결과가 어색할 때 가장 먼저 확인할 부분입니다."
+        />
+        <div className="tip-board">
+          <p>
+            이미지가 밋밋하면 조명, 무드, 카메라를 먼저 바꿔보세요. 이미지가
+            너무 과하면 Midjourney의 스타일 강도와 변주 값을 낮추면 됩니다.
+          </p>
+          <p>
+            손, 얼굴, 글자 오류가 많으면 Stable Diffusion에서는 네거티브
+            프롬프트까지 함께 복사해서 사용하세요.
+          </p>
+          <p>
+            상품 판매용 이미지는 결과 용도를 상품 페이지나 룩북으로 두고, 포즈는
+            전신 스탠딩을 선택하면 의상 구조가 더 잘 보입니다.
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }
 

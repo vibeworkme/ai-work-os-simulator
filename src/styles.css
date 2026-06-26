@@ -24,6 +24,7 @@
 body {
   margin: 0;
   min-width: 320px;
+  overflow-x: hidden;
   background:
     linear-gradient(90deg, rgba(21, 21, 21, 0.035) 1px, transparent 1px),
     linear-gradient(180deg, rgba(21, 21, 21, 0.03) 1px, transparent 1px),
@@ -120,6 +121,12 @@ h1 {
 .secondary-action {
   background: #fff;
   color: var(--ink);
+}
+
+.icon-button.is-current {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
 }
 
 .icon-button:hover,
@@ -494,6 +501,162 @@ textarea {
   margin: 0;
 }
 
+.guide-page {
+  display: grid;
+  gap: 28px;
+  margin: 0 auto;
+  max-width: 1180px;
+  min-width: 0;
+  overflow-x: hidden;
+  padding: 28px clamp(16px, 4vw, 36px) 52px;
+  width: 100%;
+}
+
+.guide-hero {
+  background:
+    linear-gradient(135deg, rgba(214, 63, 50, 0.08), transparent 42%),
+    linear-gradient(315deg, rgba(47, 107, 82, 0.1), transparent 48%),
+    #fff;
+  border: 1px solid var(--ink);
+  border-radius: 8px;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  padding: clamp(22px, 4vw, 42px);
+  width: 100%;
+}
+
+.guide-hero h2 {
+  font-size: clamp(2rem, 5vw, 4.4rem);
+  line-height: 0.95;
+  max-width: 920px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  width: 100%;
+}
+
+.guide-hero > p {
+  color: #3f4245;
+  font-size: clamp(1rem, 2vw, 1.14rem);
+  line-height: 1.6;
+  margin: 18px 0 0;
+  max-width: 760px;
+}
+
+.guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.guide-actions .primary-action,
+.guide-actions .secondary-action {
+  flex: 0 1 auto;
+}
+
+.guide-section {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  width: 100%;
+}
+
+.guide-card-grid,
+.generator-guide,
+.recipe-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+  width: 100%;
+}
+
+.guide-card,
+.term-row,
+.generator-guide article,
+.recipe-card,
+.tip-board {
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  max-width: 100%;
+}
+
+.guide-card,
+.generator-guide article,
+.recipe-card {
+  min-width: 0;
+  padding: 16px;
+}
+
+.guide-card h3 {
+  font-family: "Archivo Narrow", Inter, sans-serif;
+  font-size: 1.35rem;
+  line-height: 1.05;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.guide-card p,
+.term-row p,
+.generator-guide p,
+.recipe-card p,
+.tip-board p {
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.55;
+  margin: 8px 0 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.term-list {
+  display: grid;
+  gap: 8px;
+}
+
+.term-row {
+  align-items: start;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 140px minmax(0, 1fr);
+  min-width: 0;
+  padding: 14px 16px;
+}
+
+.term-row strong,
+.generator-guide span,
+.recipe-card span {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.generator-guide span {
+  color: var(--red);
+  font-family: "Archivo Narrow", Inter, sans-serif;
+  font-size: 1.28rem;
+}
+
+.recipe-card {
+  border-color: var(--ink);
+}
+
+.recipe-card span {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.tip-board {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.tip-board p {
+  margin: 0;
+}
+
 @media (max-width: 1060px) {
   .workspace {
     grid-template-columns: 1fr;
@@ -547,6 +710,55 @@ textarea {
   }
 
   .segmented {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-card-grid,
+  .generator-guide,
+  .recipe-grid,
+  .term-row {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-page {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .guide-hero,
+  .guide-section,
+  .guide-card-grid,
+  .generator-guide,
+  .recipe-grid,
+  .term-list,
+  .guide-card,
+  .term-row,
+  .generator-guide article,
+  .recipe-card,
+  .tip-board {
+    max-width: calc(100vw - 40px);
+    width: calc(100vw - 40px);
+  }
+
+  .guide-hero h2 {
+    font-size: 1.5rem;
+    line-height: 1.14;
+    max-width: 12ch;
+    word-break: break-all;
+  }
+
+  .guide-hero > p,
+  .guide-card p,
+  .term-row p,
+  .generator-guide p,
+  .recipe-card p,
+  .tip-board p {
+    max-width: 28ch;
+    word-break: break-all;
+  }
+
+  .guide-actions {
+    display: grid;
     grid-template-columns: 1fr;
   }
 }
