@@ -113,6 +113,25 @@ const benchmarkPrinciples = [
 
 const reviewChecklist = ["사실이 맞는가?", "수치와 날짜가 맞는가?", "사내 기준과 충돌하지 않는가?", "민감정보가 포함되어 있지 않은가?", "담당자와 기한이 명확한가?", "실행 가능한 내용인가?"];
 
+const guideReasons = [
+  {
+    title: "AI를 모든 업무에 쓰려고 하면 실패하기 쉽습니다.",
+    text: "먼저 반복되고, 자료가 있고, 사람이 최종 검토할 수 있는 업무 하나를 골라야 합니다.",
+  },
+  {
+    title: "좋은 답변은 좋은 기준 자료에서 나옵니다.",
+    text: "AI에게 많이 넣는 것보다, 우리 조직에서 승인된 최신 자료를 넣는 것이 더 중요합니다.",
+  },
+  {
+    title: "역할이 모호하면 결과도 흔들립니다.",
+    text: "AI를 일반 도우미가 아니라 회의록 정리자, 보고서 작성 보조자, 품질 이슈 분석자처럼 업무 역할로 고정합니다.",
+  },
+  {
+    title: "출력 형식이 표준화되어야 팀에서 쓸 수 있습니다.",
+    text: "요약, 현황, 문제점, 원인, 실행계획, 담당자, 기한처럼 결과물의 구조를 미리 정해야 검토가 빨라집니다.",
+  },
+];
+
 const weaveCapabilities = [
   { icon: GraduationCap, title: "AI 교육 및 워크숍" },
   { icon: Route, title: "창업교육 및 진로설계" },
@@ -279,6 +298,30 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
           처음부터
         </button>
       </header>
+
+      <section className="guide-document" aria-labelledby="guide-title">
+        <div className="guide-lead">
+          <p className="eyebrow">Training Guide</p>
+          <h2 id="guide-title">왜 이런 훈련이 필요한가</h2>
+          <p>
+            이 훈련은 프롬프트 문장을 멋지게 쓰는 연습이 아닙니다. 내 업무를 AI가 처리 가능한 형태로
+            구조화하고, 사람이 검토할 수 있는 결과물로 만드는 연습입니다.
+          </p>
+        </div>
+        <div className="guide-grid">
+          {guideReasons.map((reason, index) => (
+            <article key={reason.title}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <h3>{reason.title}</h3>
+              <p>{reason.text}</p>
+            </article>
+          ))}
+        </div>
+        <div className="guide-rule">
+          <strong>훈련 원칙</strong>
+          <p>업무 선정 → 기준 자료 구성 → AI 역할 설정 → 출력 형식 표준화 → 사람 검토 순서로 진행합니다.</p>
+        </div>
+      </section>
 
       <nav className="stepper" aria-label="진행 단계">
         {steps.map((step, index) => (
