@@ -359,7 +359,7 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
               </div>
               <div className="completion-note">
                 <CheckCircle2 size={20} />
-                <p>{selectedScenario.work} 업무용 훈련 요청문이 완성되었습니다. 복사해서 실제 자료와 함께 사용해보세요.</p>
+                <p>{selectedScenario.work} 업무 프롬프트가 완성되었습니다. 복사해서 실제 자료와 함께 사용해보세요.</p>
               </div>
             </StepCard>
           )}
@@ -385,7 +385,7 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
 
           <div className="prompt-card">
             <div className="prompt-head">
-              <h2>{activeStep >= 5 ? "훈련 요청문 완성" : "요청문 조립 중"}</h2>
+              <h2>{activeStep >= 5 ? "업무 프롬프트 완성" : "프롬프트 조립 중"}</h2>
               <button onClick={copyPrompt}>
                 <Copy size={16} />
                 복사
