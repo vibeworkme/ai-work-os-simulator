@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowRight,
@@ -915,11 +915,11 @@ function PracticeLab({
         <div>
           <p className="eyebrow">Practice Lab</p>
           <h2>실제 자료로 프롬프트를 검증합니다.</h2>
-          <p>자료를 넣고, 완성된 요청문을 AI에 복사한 뒤, 결과를 사람이 검토합니다.</p>
+          <p>자료를 넣고, 완성된 요청문을 ChatGPT 등 사용하는 AI에 넣은 뒤, 나온 결과를 사람이 검토합니다.</p>
         </div>
         <button className="restore-button" onClick={onCopyPracticePrompt}>
           <Copy size={16} />
-          실습 프롬프트 복사
+          최종 요청문 복사
         </button>
       </div>
 
@@ -930,11 +930,11 @@ function PracticeLab({
         </article>
         <article>
           <span>2</span>
-          <p>오른쪽 최종 요청문을 복사해 AI에 넣습니다.</p>
+          <p>오른쪽 최종 요청문을 ChatGPT 등 AI에 넣습니다.</p>
         </article>
         <article>
           <span>3</span>
-          <p>AI 결과를 아래에 붙이고 사람이 검토합니다.</p>
+          <p>AI가 만든 결과를 3번에 붙이고 4번에 메모합니다.</p>
         </article>
       </div>
 
@@ -954,24 +954,24 @@ function PracticeLab({
           <pre>{beforePrompt}</pre>
         </article>
         <article className="is-practice-prompt">
-          <span>2. AI에 넣을 최종 요청문</span>
-          <small>이 요청문을 복사해 AI에 넣으면 됩니다.</small>
+          <span>2. ChatGPT 등에 넣을 최종 요청문</span>
+          <small>이 요청문을 복사해 ChatGPT, Claude, Copilot 등 사용하는 AI에 넣으면 됩니다.</small>
           <pre>{practicePrompt}</pre>
         </article>
       </div>
 
       <div className="practice-review">
         <label className="practice-field">
-          <span>3. AI 결과 초안 붙여넣기</span>
-          <textarea
+          <span>3. AI가 만든 결과 또는 개선된 프롬프트 붙여넣기</span>
+          <AutoGrowTextarea
             onChange={(event) => onChangeAiDraft(event.target.value)}
-            placeholder="복사한 실습 프롬프트를 AI에 넣은 뒤 결과 초안을 붙여넣어 비교합니다."
+            placeholder="2번 최종 요청문을 ChatGPT 등 AI에 넣은 뒤, 나온 결과나 개선된 프롬프트를 그대로 붙여넣습니다."
             value={aiDraft}
           />
         </label>
         <label className="practice-field">
           <span>4. 사람 검토 및 개선 메모</span>
-          <textarea
+          <AutoGrowTextarea
             onChange={(event) => onChangeReviewMemo(event.target.value)}
             placeholder="사실, 수치, 사내 기준, 민감정보, 실행 가능성을 검토한 뒤 다음에 보완할 점을 적습니다."
             value={reviewMemo}
@@ -979,6 +979,28 @@ function PracticeLab({
         </label>
       </div>
     </section>
+  );
+}
+
+function AutoGrowTextarea({ onChange, placeholder, value }) {
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [value]);
+
+  return (
+    <textarea
+      className="auto-grow-textarea"
+      onChange={onChange}
+      placeholder={placeholder}
+      ref={textareaRef}
+      value={value}
+    />
   );
 }
 

@@ -768,6 +768,11 @@ h2 {
   width: 100%;
 }
 
+.practice-field textarea.auto-grow-textarea {
+  min-height: 170px;
+  overflow: hidden;
+}
+
 .practice-field textarea:focus {
   border-color: var(--green);
   box-shadow: 0 0 0 3px rgba(34, 114, 91, 0.12);
