@@ -445,7 +445,8 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
       </section>
 
       <section className="weave-section">
-        <div>
+        <div className="weave-wordmark" aria-hidden="true">WEAVE&</div>
+        <div className="weave-story">
           <p className="eyebrow">Built by WEAVE&</p>
           <h2>AI로 사람의 가능성을 발견하고 실행으로 연결합니다.</h2>
           <div className="weave-copy">
@@ -461,7 +462,11 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
           </div>
         </div>
         <div className="weave-card">
-          <blockquote>“기술보다 중요한 것은 사람의 가능성입니다.”</blockquote>
+          <blockquote>
+            <span>기술보다</span>
+            <span>중요한 것은</span>
+            <span>사람의 가능성입니다.</span>
+          </blockquote>
           <div className="weave-capabilities">
             {weaveCapabilities.map(({ icon: Icon, title }) => (
               <article key={title}>
