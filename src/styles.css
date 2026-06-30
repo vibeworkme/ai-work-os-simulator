@@ -96,6 +96,7 @@ h2 {
 .reset-button,
 .next-button,
 .prompt-head button,
+.restore-button,
 .material-adder button {
   align-items: center;
   border: 1px solid var(--ink);
@@ -111,7 +112,8 @@ h2 {
 }
 
 .reset-button,
-.prompt-head button {
+.prompt-head button,
+.restore-button {
   background: #fff;
   color: var(--ink);
 }
@@ -129,6 +131,7 @@ h2 {
 .reset-button:hover,
 .next-button:hover,
 .prompt-head button:hover,
+.restore-button:hover,
 .material-adder button:hover {
   transform: translateY(-1px);
 }
@@ -339,6 +342,11 @@ h2 {
   width: 30px;
 }
 
+.restore-button {
+  margin-top: 10px;
+  min-height: 38px;
+}
+
 .material-adder,
 .role-editor,
 .training-note {
@@ -540,6 +548,96 @@ h2 {
   white-space: pre-wrap;
 }
 
+.weave-section {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(20, 184, 166, 0.22), transparent 28%),
+    linear-gradient(135deg, #07111f 0%, #0f172a 52%, #123c3a 100%);
+  color: #fff;
+  display: grid;
+  gap: 34px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
+  margin-top: 24px;
+  padding: clamp(42px, 7vw, 88px) clamp(18px, 4vw, 44px);
+}
+
+.weave-section > div:first-child {
+  justify-self: end;
+  max-width: 720px;
+}
+
+.weave-section .eyebrow {
+  color: #99f6e4;
+}
+
+.weave-section h2 {
+  font-size: clamp(2rem, 4vw, 4.7rem);
+  line-height: 1.05;
+  max-width: 760px;
+}
+
+.weave-copy {
+  color: #cbd5e1;
+  display: grid;
+  gap: 14px;
+  line-height: 1.75;
+  margin-top: 24px;
+}
+
+.weave-card {
+  align-self: start;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  padding: 22px;
+}
+
+.weave-card blockquote {
+  background: #fff;
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: clamp(1.35rem, 2vw, 2rem);
+  font-weight: 900;
+  line-height: 1.3;
+  margin: 0;
+  padding: 20px;
+}
+
+.weave-capabilities {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.weave-capabilities article {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 50px;
+  padding: 12px;
+}
+
+.weave-capabilities svg {
+  color: #99f6e4;
+}
+
+.weave-capabilities span {
+  font-weight: 900;
+}
+
+.weave-card a {
+  align-items: center;
+  color: #99f6e4;
+  display: inline-flex;
+  font-weight: 900;
+  gap: 8px;
+  margin-top: 18px;
+  text-decoration: none;
+}
+
 @media (max-width: 1080px) {
   .stepper {
     grid-template-columns: 1fr;
@@ -568,6 +666,14 @@ h2 {
 
   .side-panel {
     position: static;
+  }
+
+  .weave-section {
+    grid-template-columns: 1fr;
+  }
+
+  .weave-section > div:first-child {
+    justify-self: start;
   }
 }
 
@@ -601,6 +707,7 @@ h2 {
   .selected-work,
   .prompt-card,
   .principle-card,
+  .weave-card,
   .work-list,
   .work-list button {
     max-width: min(calc(100vw - 40px), 350px);
@@ -621,6 +728,16 @@ h2 {
 
   .work-list button {
     min-height: auto;
+  }
+
+  .weave-section {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .weave-section h2,
+  .weave-copy {
+    max-width: 350px;
   }
 
   .step-card-head,

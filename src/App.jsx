@@ -6,12 +6,17 @@ import {
   ClipboardList,
   Copy,
   FileText,
+  GraduationCap,
   Layers3,
+  Mail,
   Plus,
+  Radar,
   RefreshCw,
+  Route,
   ShieldCheck,
   Sparkles,
   UserRoundCog,
+  Workflow,
   X,
 } from "lucide-react";
 
@@ -108,6 +113,13 @@ const benchmarkPrinciples = [
 
 const reviewChecklist = ["사실이 맞는가?", "수치와 날짜가 맞는가?", "사내 기준과 충돌하지 않는가?", "민감정보가 포함되어 있지 않은가?", "담당자와 기한이 명확한가?", "실행 가능한 내용인가?"];
 
+const weaveCapabilities = [
+  { icon: GraduationCap, title: "AI 교육 및 워크숍" },
+  { icon: Route, title: "창업교육 및 진로설계" },
+  { icon: Radar, title: "AI 기반 진단 서비스" },
+  { icon: Workflow, title: "업무 자동화 및 AI 에이전트" },
+];
+
 function App() {
   const [selectedId, setSelectedId] = useState("");
   const [activeStep, setActiveStep] = useState(1);
@@ -115,6 +127,7 @@ function App() {
   const [customOutputInput, setCustomOutputInput] = useState("");
   const [customMaterialsByWork, setCustomMaterialsByWork] = useState({});
   const [customOutputsByWork, setCustomOutputsByWork] = useState({});
+  const [removedDefaultMaterialsByWork, setRemovedDefaultMaterialsByWork] = useState({});
   const [roleByWork, setRoleByWork] = useState({});
   const [checkedReviews, setCheckedReviews] = useState([]);
 
@@ -125,7 +138,11 @@ function App() {
 
   const customMaterials = selectedId ? customMaterialsByWork[selectedId] ?? [] : [];
   const customOutputs = selectedId ? customOutputsByWork[selectedId] ?? [] : [];
-  const sourceMaterials = selectedScenario ? [...selectedScenario.sourceMaterials, ...customMaterials] : [];
+  const removedDefaultMaterials = selectedId ? removedDefaultMaterialsByWork[selectedId] ?? [] : [];
+  const defaultMaterials = selectedScenario
+    ? selectedScenario.sourceMaterials.filter((item) => !removedDefaultMaterials.includes(item))
+    : [];
+  const sourceMaterials = selectedScenario ? [...defaultMaterials, ...customMaterials] : [];
   const outputFormat = selectedScenario ? [...selectedScenario.outputFormat, ...customOutputs] : [];
   const roleText = selectedScenario ? roleByWork[selectedId] ?? selectedScenario.role : "";
 
@@ -190,6 +207,10 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
   function addCustomMaterial() {
     const material = customMaterialInput.trim();
     if (!selectedId || !material) return;
+    if (sourceMaterials.includes(material)) {
+      setCustomMaterialInput("");
+      return;
+    }
 
     setCustomMaterialsByWork((current) => appendUnique(current, selectedId, material));
     setCustomMaterialInput("");
@@ -199,9 +220,29 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
     setCustomMaterialsByWork((current) => removeItem(current, selectedId, material));
   }
 
+  function removeSourceMaterial(material) {
+    if (!selectedScenario || !selectedId) return;
+
+    if (customMaterials.includes(material)) {
+      removeCustomMaterial(material);
+      return;
+    }
+
+    setRemovedDefaultMaterialsByWork((current) => appendUnique(current, selectedId, material));
+  }
+
+  function restoreDefaultMaterials() {
+    if (!selectedId) return;
+    setRemovedDefaultMaterialsByWork((current) => ({ ...current, [selectedId]: [] }));
+  }
+
   function addCustomOutput() {
     const output = customOutputInput.trim();
     if (!selectedId || !output) return;
+    if (outputFormat.includes(output)) {
+      setCustomOutputInput("");
+      return;
+    }
 
     setCustomOutputsByWork((current) => appendUnique(current, selectedId, output));
     setCustomOutputInput("");
@@ -290,8 +331,14 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
               <SuggestionList
                 customItems={customMaterials}
                 items={sourceMaterials}
-                onRemoveCustom={removeCustomMaterial}
+                onRemoveItem={removeSourceMaterial}
+                removableItems={sourceMaterials}
               />
+              {removedDefaultMaterials.length > 0 && (
+                <button className="restore-button" onClick={restoreDefaultMaterials}>
+                  기본 자료 복원
+                </button>
+              )}
               <Adder
                 buttonLabel="자료 추가"
                 label="우리 조직 자료 추가"
@@ -328,7 +375,8 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
               <SuggestionList
                 customItems={customOutputs}
                 items={outputFormat}
-                onRemoveCustom={removeCustomOutput}
+                onRemoveItem={removeCustomOutput}
+                removableItems={customOutputs}
                 ordered
               />
               <Adder
@@ -395,6 +443,39 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
           </div>
         </aside>
       </section>
+
+      <section className="weave-section">
+        <div>
+          <p className="eyebrow">Built by WEAVE&</p>
+          <h2>AI로 사람의 가능성을 발견하고 실행으로 연결합니다.</h2>
+          <div className="weave-copy">
+            <p>
+              위브앤은 AI, 창업교육, 진로설계 분야에서 활동하는 교육·컨설팅 기업입니다. 우리는 단순히
+              정보를 제공하는 것을 넘어, 사람들이 자신의 강점과 가능성을 발견하고 실제 행동으로 옮길 수
+              있도록 돕는 도구와 프로그램을 만듭니다.
+            </p>
+            <p>
+              이 훈련실은 같은 철학에서 출발했습니다. AI를 잘 쓰는 개인을 넘어서, 자신의 업무를 AI와 함께
+              실행 가능한 방식으로 재설계하는 직장인을 돕기 위한 연습 도구입니다.
+            </p>
+          </div>
+        </div>
+        <div className="weave-card">
+          <blockquote>“기술보다 중요한 것은 사람의 가능성입니다.”</blockquote>
+          <div className="weave-capabilities">
+            {weaveCapabilities.map(({ icon: Icon, title }) => (
+              <article key={title}>
+                <Icon size={20} />
+                <span>{title}</span>
+              </article>
+            ))}
+          </div>
+          <a href="mailto:ceo@wilab.co.kr">
+            <Mail size={16} />
+            ceo@wilab.co.kr
+          </a>
+        </div>
+      </section>
     </main>
   );
 }
@@ -424,7 +505,7 @@ function StepCard({ icon: Icon, title, text, children }) {
   );
 }
 
-function SuggestionList({ customItems = [], items, onRemoveCustom, ordered = false }) {
+function SuggestionList({ customItems = [], items, onRemoveItem, ordered = false, removableItems = [] }) {
   const Tag = ordered ? "ol" : "ul";
 
   return (
@@ -433,8 +514,8 @@ function SuggestionList({ customItems = [], items, onRemoveCustom, ordered = fal
         <li className={customItems.includes(item) ? "is-custom" : ""} key={item}>
           <CheckCircle2 size={18} />
           <span>{item}</span>
-          {customItems.includes(item) && (
-            <button aria-label={`${item} 삭제`} onClick={() => onRemoveCustom(item)}>
+          {removableItems.includes(item) && (
+            <button aria-label={`${item} 삭제`} onClick={() => onRemoveItem(item)}>
               <X size={16} />
             </button>
           )}
