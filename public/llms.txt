@@ -1,0 +1,31 @@
+# AI 업무 운영 훈련실
+
+> 일반 직장인이 AI에게 일을 맡기기 전, 업무 선정, 기준 자료, AI 역할, 출력 형식, 사람 검토 기준을 설계하도록 돕는 웹 기반 훈련 서비스입니다.
+
+## 핵심 페이지
+
+- [서비스 소개](https://ai-work-os-simulator.vercel.app/about/): AI 업무 운영 훈련실의 목적, 대상, 핵심 가치
+- [훈련 가이드](https://ai-work-os-simulator.vercel.app/guide/): 왜 이런 훈련이 필요한지에 대한 설명
+- [훈련 과정](https://ai-work-os-simulator.vercel.app/training/): 업무 선정부터 사람 검토까지 5단계 훈련 흐름
+- [위브앤 소개](https://ai-work-os-simulator.vercel.app/weavend/): 위브앤의 교육 및 컨설팅 분야
+- [FAQ](https://ai-work-os-simulator.vercel.app/faq/): 자주 묻는 질문과 답변
+- [전체 AI용 설명](https://ai-work-os-simulator.vercel.app/llms-full.txt): AI 챗봇과 검색엔진을 위한 전체 텍스트 요약
+
+## 서비스 요약
+
+AI 업무 운영 훈련실은 프롬프트 문장을 멋지게 쓰는 법보다, 업무를 AI가 처리 가능한 구조로 바꾸는 훈련에 초점을 둡니다. 사용자는 반복 업무 하나를 선택하고, 기준 자료를 정리하며, AI 역할을 설정하고, 출력 형식을 표준화한 뒤, AI 결과물을 사람이 검토하는 방식으로 훈련합니다.
+
+## 훈련 대상 업무
+
+- 회의록 정리
+- 보고서 초안 작성
+- 제안서 작성
+- 고객 문의 답변
+- 품질 이슈 원인 분석
+- 생산 현황 요약
+- 사내 매뉴얼 검색
+- 교육자료 제작
+
+## 운영 주체
+
+WEAVE&는 바이브코딩 워크숍, AI기반 문제해결 워크숍, 업무자동화와 AI 에이전트 교육 및 컨설팅, 창업교육과 진로설계를 연결하는 교육·컨설팅 기업입니다.

@@ -452,6 +452,10 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
           <h1>AI에게 일을 맡기기 전, 업무의 기준부터 설계합니다.</h1>
         </div>
         <div className="hero-actions">
+          <a className="ghost-button" href="/llms-full.txt">
+            <FileText size={18} />
+            AI용 문서
+          </a>
           <button className="ghost-button" onClick={goToGuide}>
             <Map size={18} />
             가이드 문서
