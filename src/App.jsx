@@ -14,6 +14,7 @@ import {
   Plus,
   Radar,
   RefreshCw,
+  Save,
   Route,
   ShieldCheck,
   Sparkles,
@@ -155,6 +156,8 @@ const effectSignals = [
   "검토 메모를 남겨 다음 업무의 기준 자료로 재사용한다.",
 ];
 
+const trainingRecordStorageKey = "ai-work-os-training-records";
+
 const weaveCapabilities = [
   { icon: Sparkles, title: "바이브코딩 워크숍" },
   { icon: Radar, title: "AI기반 문제해결 워크숍" },
@@ -177,6 +180,8 @@ function App() {
   const [practiceDataByWork, setPracticeDataByWork] = useState({});
   const [aiDraftByWork, setAiDraftByWork] = useState({});
   const [reviewMemoByWork, setReviewMemoByWork] = useState({});
+  const [trainingRecords, setTrainingRecords] = useState(() => loadTrainingRecords());
+  const [saveMessage, setSaveMessage] = useState("");
   const [checkedReviews, setCheckedReviews] = useState([]);
 
   const selectedScenario = useMemo(
@@ -426,6 +431,32 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
     setReviewMemoByWork((current) => ({ ...current, [selectedId]: value }));
   }
 
+  function saveTrainingRecord() {
+    if (!selectedScenario) return;
+
+    const now = new Date();
+    const record = {
+      id: `${selectedScenario.id}-${now.getTime()}`,
+      savedAt: now.toISOString(),
+      work: selectedScenario.work,
+      role: roleText,
+      sourceMaterials,
+      outputFormat,
+      practiceData,
+      practicePrompt,
+      aiDraft,
+      reviewMemo,
+      checkedReviews,
+    };
+
+    const nextRecords = [record, ...trainingRecords].slice(0, 12);
+    setTrainingRecords(nextRecords);
+    window.localStorage.setItem(trainingRecordStorageKey, JSON.stringify(nextRecords));
+    downloadMarkdownRecord(record);
+    setSaveMessage("훈련 기록을 저장하고 Markdown 파일로 내려받았습니다.");
+    window.setTimeout(() => setSaveMessage(""), 3200);
+  }
+
   function toggleReview(item) {
     setCheckedReviews((current) =>
       current.includes(item) ? current.filter((entry) => entry !== item) : [...current, item],
@@ -610,9 +641,12 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
                 onChangePracticeData={updatePracticeData}
                 onChangeReviewMemo={updateReviewMemo}
                 onCopyPracticePrompt={copyPracticePrompt}
+                onSaveTrainingRecord={saveTrainingRecord}
                 practiceData={practiceData}
                 practicePrompt={practicePrompt}
+                recentRecords={trainingRecords}
                 reviewMemo={reviewMemo}
+                saveMessage={saveMessage}
                 scenario={selectedScenario}
               />
             </StepCard>
@@ -651,7 +685,7 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
 
           <div className="prompt-card">
             <div className="prompt-head">
-              <h2>{activeStep >= 5 ? "업무 프롬프트 완성" : "프롬프트 조립 중"}</h2>
+              <h2>{activeStep >= 5 ? "실습 프롬프트" : "프롬프트 조립 중"}</h2>
               <button onClick={copyPrompt}>
                 <Copy size={16} />
                 복사
@@ -807,6 +841,73 @@ function moveItem(items, item, direction) {
   return nextItems;
 }
 
+function loadTrainingRecords() {
+  try {
+    const savedRecords = window.localStorage.getItem(trainingRecordStorageKey);
+    if (!savedRecords) return [];
+    const parsedRecords = JSON.parse(savedRecords);
+    return Array.isArray(parsedRecords) ? parsedRecords : [];
+  } catch {
+    return [];
+  }
+}
+
+function downloadMarkdownRecord(record) {
+  const savedDate = formatRecordDate(record.savedAt);
+  const markdown = `# AI 업무 운영 훈련 기록
+
+- 저장 일시: ${savedDate}
+- 훈련 업무: ${record.work}
+
+## 1. 실제 업무자료
+
+${record.practiceData || "작성된 실제 업무자료가 없습니다."}
+
+## 2. 실습 프롬프트
+
+\`\`\`text
+${record.practicePrompt}
+\`\`\`
+
+## 3. AI 결과 초안
+
+${record.aiDraft || "붙여넣은 AI 결과 초안이 없습니다."}
+
+## 4. 사람 검토 및 개선 메모
+
+${record.reviewMemo || "작성된 검토 메모가 없습니다."}
+
+## 기준 자료
+
+${record.sourceMaterials.map((item) => `- ${item}`).join("\n") || "- 없음"}
+
+## 출력 형식
+
+${record.outputFormat.map((item, index) => `${index + 1}. ${item}`).join("\n") || "없음"}
+
+## 확인한 검토 기준
+
+${record.checkedReviews.map((item) => `- ${item}`).join("\n") || "- 체크한 검토 기준이 없습니다."}
+`;
+
+  const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `ai-work-training-${record.work}-${record.savedAt.slice(0, 10)}.md`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+function formatRecordDate(value) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
 function StepCard({ icon: Icon, title, text, children }) {
   return (
     <article className="step-card">
@@ -908,22 +1009,27 @@ function PracticeLab({
   onChangePracticeData,
   onChangeReviewMemo,
   onCopyPracticePrompt,
+  onSaveTrainingRecord,
   practiceData,
   practicePrompt,
+  recentRecords,
   reviewMemo,
+  saveMessage,
   scenario,
 }) {
+  const canSaveRecord = Boolean(practiceData.trim() || aiDraft.trim() || reviewMemo.trim());
+
   return (
     <section className="practice-lab" aria-label="실제 업무자료 실습">
       <div className="practice-head">
         <div>
           <p className="eyebrow">Practice Lab</p>
           <h2>실제 자료로 프롬프트를 검증합니다.</h2>
-          <p>자료를 넣고, 완성된 요청문을 ChatGPT 등 사용하는 AI에 넣은 뒤, 나온 결과를 사람이 검토합니다.</p>
+          <p>자료를 넣고, 실습 프롬프트를 ChatGPT 등 사용하는 AI에 넣은 뒤, 나온 결과와 검토 기록을 남깁니다.</p>
         </div>
         <button className="restore-button" onClick={onCopyPracticePrompt}>
           <Copy size={16} />
-          최종 요청문 복사
+          실습 프롬프트 복사
         </button>
       </div>
 
@@ -934,7 +1040,7 @@ function PracticeLab({
         </article>
         <article>
           <span>2</span>
-          <p>오른쪽 최종 요청문을 ChatGPT 등 AI에 넣습니다.</p>
+          <p>오른쪽 실습 프롬프트를 ChatGPT 등 AI에 넣습니다.</p>
         </article>
         <article>
           <span>3</span>
@@ -958,7 +1064,7 @@ function PracticeLab({
           <pre>{beforePrompt}</pre>
         </article>
         <article className="is-practice-prompt">
-          <span>2. ChatGPT 등에 넣을 최종 요청문</span>
+          <span>2. 실습 프롬프트</span>
           <small>이 요청문을 복사해 ChatGPT, Claude, Copilot 등 사용하는 AI에 넣으면 됩니다.</small>
           <pre>{practicePrompt}</pre>
         </article>
@@ -969,7 +1075,7 @@ function PracticeLab({
           <span>3. AI가 만든 결과 또는 개선된 프롬프트 붙여넣기</span>
           <AutoGrowTextarea
             onChange={(event) => onChangeAiDraft(event.target.value)}
-            placeholder="2번 최종 요청문을 ChatGPT 등 AI에 넣은 뒤, 나온 결과나 개선된 프롬프트를 그대로 붙여넣습니다."
+            placeholder="2번 실습 프롬프트를 ChatGPT 등 AI에 넣은 뒤, 나온 결과나 개선된 프롬프트를 그대로 붙여넣습니다."
             value={aiDraft}
           />
         </label>
@@ -982,6 +1088,33 @@ function PracticeLab({
           />
         </label>
       </div>
+
+      <div className="record-save-panel">
+        <div>
+          <span>5. 훈련 기록 저장</span>
+          <p>실제 자료, 실습 프롬프트, AI 결과, 사람 검토 메모를 하나의 기록으로 남깁니다.</p>
+        </div>
+        <button disabled={!canSaveRecord} onClick={onSaveTrainingRecord}>
+          <Save size={17} />
+          훈련 기록 저장
+        </button>
+      </div>
+
+      {saveMessage && <p className="save-message">{saveMessage}</p>}
+
+      {recentRecords.length > 0 && (
+        <div className="record-history" aria-label="최근 저장 기록">
+          <span>최근 저장 기록</span>
+          <ul>
+            {recentRecords.slice(0, 3).map((record) => (
+              <li key={record.id}>
+                <b>{record.work}</b>
+                <small>{formatRecordDate(record.savedAt)}</small>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }
