@@ -134,6 +134,27 @@ const guideReasons = [
   },
 ];
 
+const trainerModes = [
+  {
+    title: "30분 체험형",
+    text: "업무 하나를 고르고, 전/후 프롬프트를 비교해 AI 결과가 왜 달라지는지 체감합니다.",
+  },
+  {
+    title: "90분 워크숍형",
+    text: "실제 업무자료를 넣고 출력 형식을 조정한 뒤, AI 결과를 사람이 검토하는 루프까지 진행합니다.",
+  },
+  {
+    title: "부서 적용형",
+    text: "팀 공통 업무를 선정하고 기준 자료와 출력 형식을 합의해 부서용 프롬프트 템플릿으로 축적합니다.",
+  },
+];
+
+const effectSignals = [
+  "막연한 요청과 구조화된 요청의 차이를 비교한다.",
+  "실제 업무자료를 넣어 결과 품질을 점검한다.",
+  "검토 메모를 남겨 다음 업무의 기준 자료로 재사용한다.",
+];
+
 const weaveCapabilities = [
   { icon: Sparkles, title: "바이브코딩 워크숍" },
   { icon: Radar, title: "AI기반 문제해결 워크숍" },
@@ -153,6 +174,9 @@ function App() {
   const [removedDefaultOutputsByWork, setRemovedDefaultOutputsByWork] = useState({});
   const [outputOrderByWork, setOutputOrderByWork] = useState({});
   const [roleByWork, setRoleByWork] = useState({});
+  const [practiceDataByWork, setPracticeDataByWork] = useState({});
+  const [aiDraftByWork, setAiDraftByWork] = useState({});
+  const [reviewMemoByWork, setReviewMemoByWork] = useState({});
   const [checkedReviews, setCheckedReviews] = useState([]);
 
   const selectedScenario = useMemo(
@@ -175,6 +199,9 @@ function App() {
     ? reconcileOrder(outputOrderByWork[selectedId] ?? [], [...defaultOutputs, ...customOutputs])
     : [];
   const roleText = selectedScenario ? roleByWork[selectedId] ?? selectedScenario.role : "";
+  const practiceData = selectedId ? practiceDataByWork[selectedId] ?? "" : "";
+  const aiDraft = selectedId ? aiDraftByWork[selectedId] ?? "" : "";
+  const reviewMemo = selectedId ? reviewMemoByWork[selectedId] ?? "" : "";
 
   useEffect(() => {
     function syncPageWithHash() {
@@ -226,6 +253,40 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
 
     return sections.join("\n\n");
   }, [activeStep, outputFormat, roleText, selectedScenario, sourceMaterials]);
+
+  const beforePrompt = useMemo(() => {
+    if (!selectedScenario) return "업무를 선택하면 훈련 전 요청 예시가 표시됩니다.";
+
+    return `${selectedScenario.work} 해줘.
+
+자료:
+${practiceData || "[실제 업무자료를 붙여 넣으세요]"}`;
+  }, [practiceData, selectedScenario]);
+
+  const practicePrompt = useMemo(() => {
+    if (!selectedScenario) return "업무를 선택하면 실제 자료용 훈련 프롬프트가 표시됩니다.";
+
+    return `${roleText}
+
+업무: ${selectedScenario.work}
+
+실제 업무자료:
+${practiceData || "[실제 업무자료를 붙여 넣으세요]"}
+
+기준 자료:
+${sourceMaterials.map((item) => `- ${item}`).join("\n")}
+
+출력 형식:
+${outputFormat.map((item, index) => `${index + 1}. ${item}`).join("\n")}
+
+검토 기준:
+${reviewChecklist.map((item) => `- ${item}`).join("\n")}
+
+작성 원칙:
+- 기준 자료와 실제 업무자료에 없는 내용은 임의로 확정하지 않는다.
+- 사람이 최종 검토할 수 있도록 초안 형태로 작성한다.
+- 불확실한 내용은 확인 필요사항으로 분리한다.`;
+  }, [outputFormat, practiceData, roleText, selectedScenario, sourceMaterials]);
 
   function chooseWork(id) {
     setSelectedId(id);
@@ -350,6 +411,21 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
     setRoleByWork((current) => ({ ...current, [selectedId]: value }));
   }
 
+  function updatePracticeData(value) {
+    if (!selectedId) return;
+    setPracticeDataByWork((current) => ({ ...current, [selectedId]: value }));
+  }
+
+  function updateAiDraft(value) {
+    if (!selectedId) return;
+    setAiDraftByWork((current) => ({ ...current, [selectedId]: value }));
+  }
+
+  function updateReviewMemo(value) {
+    if (!selectedId) return;
+    setReviewMemoByWork((current) => ({ ...current, [selectedId]: value }));
+  }
+
   function toggleReview(item) {
     setCheckedReviews((current) =>
       current.includes(item) ? current.filter((entry) => entry !== item) : [...current, item],
@@ -358,6 +434,10 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
 
   async function copyPrompt() {
     await navigator.clipboard.writeText(promptTemplate);
+  }
+
+  async function copyPracticePrompt() {
+    await navigator.clipboard.writeText(practicePrompt);
   }
 
   if (page === "guide") {
@@ -519,6 +599,18 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
                 <CheckCircle2 size={20} />
                 <p>{selectedScenario.work} 업무 프롬프트가 완성되었습니다. 복사해서 실제 자료와 함께 사용해보세요.</p>
               </div>
+              <PracticeLab
+                aiDraft={aiDraft}
+                beforePrompt={beforePrompt}
+                onChangeAiDraft={updateAiDraft}
+                onChangePracticeData={updatePracticeData}
+                onChangeReviewMemo={updateReviewMemo}
+                onCopyPracticePrompt={copyPracticePrompt}
+                practiceData={practiceData}
+                practicePrompt={practicePrompt}
+                reviewMemo={reviewMemo}
+                scenario={selectedScenario}
+              />
             </StepCard>
           )}
         </section>
@@ -536,6 +628,18 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
                 <article key={principle.title}>
                   <span>{principle.title}</span>
                   <p>{principle.text}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="principle-card">
+            <h2>훈련 효과 확인</h2>
+            <div>
+              {effectSignals.map((signal) => (
+                <article key={signal}>
+                  <span>체크포인트</span>
+                  <p>{signal}</p>
                 </article>
               ))}
             </div>
@@ -641,6 +745,21 @@ function GuidePage({ onBack }) {
               <p>{guideFlowText[step.id]}</p>
             </article>
           ))}
+        </section>
+
+        <section className="trainer-guide" aria-labelledby="trainer-guide-title">
+          <div>
+            <p className="eyebrow">Facilitator Guide</p>
+            <h2 id="trainer-guide-title">교육자는 훈련 시간을 이렇게 설계할 수 있습니다.</h2>
+          </div>
+          <div className="trainer-grid">
+            {trainerModes.map((mode) => (
+              <article key={mode.title}>
+                <h3>{mode.title}</h3>
+                <p>{mode.text}</p>
+              </article>
+            ))}
+          </div>
         </section>
       </section>
     </main>
@@ -775,6 +894,74 @@ function TrainingNote({ text }) {
       <Sparkles size={18} />
       <p>{text}</p>
     </div>
+  );
+}
+
+function PracticeLab({
+  aiDraft,
+  beforePrompt,
+  onChangeAiDraft,
+  onChangePracticeData,
+  onChangeReviewMemo,
+  onCopyPracticePrompt,
+  practiceData,
+  practicePrompt,
+  reviewMemo,
+  scenario,
+}) {
+  return (
+    <section className="practice-lab" aria-label="실제 업무자료 실습">
+      <div className="practice-head">
+        <div>
+          <p className="eyebrow">Practice Lab</p>
+          <h2>실제 업무자료로 훈련 효과 확인</h2>
+          <p>같은 자료라도 막연한 요청과 구조화된 요청은 결과가 달라집니다.</p>
+        </div>
+        <button className="restore-button" onClick={onCopyPracticePrompt}>
+          <Copy size={16} />
+          실습 프롬프트 복사
+        </button>
+      </div>
+
+      <label className="practice-field">
+        <span>실제 업무자료 입력</span>
+        <textarea
+          onChange={(event) => onChangePracticeData(event.target.value)}
+          placeholder={scenario.practice}
+          value={practiceData}
+        />
+      </label>
+
+      <div className="prompt-compare">
+        <article>
+          <span>훈련 전 요청</span>
+          <pre>{beforePrompt}</pre>
+        </article>
+        <article>
+          <span>훈련 후 요청</span>
+          <pre>{practicePrompt}</pre>
+        </article>
+      </div>
+
+      <div className="practice-review">
+        <label className="practice-field">
+          <span>AI 결과 초안 붙여넣기</span>
+          <textarea
+            onChange={(event) => onChangeAiDraft(event.target.value)}
+            placeholder="복사한 실습 프롬프트를 AI에 넣은 뒤 결과 초안을 붙여넣어 비교합니다."
+            value={aiDraft}
+          />
+        </label>
+        <label className="practice-field">
+          <span>사람 검토 및 개선 메모</span>
+          <textarea
+            onChange={(event) => onChangeReviewMemo(event.target.value)}
+            placeholder="사실, 수치, 사내 기준, 민감정보, 실행 가능성을 검토한 뒤 다음에 보완할 점을 적습니다."
+            value={reviewMemo}
+          />
+        </label>
+      </div>
+    </section>
   );
 }
 

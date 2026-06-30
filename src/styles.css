@@ -327,6 +327,51 @@ h2 {
   margin-top: 10px;
 }
 
+.trainer-guide {
+  background: var(--ink);
+  border-radius: 8px;
+  color: #fff;
+  display: grid;
+  gap: 22px;
+  grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.2fr);
+  padding: clamp(20px, 4vw, 34px);
+}
+
+.trainer-guide .eyebrow {
+  color: #99f6e4;
+}
+
+.trainer-guide h2 {
+  font-size: clamp(1.8rem, 3.4vw, 3.4rem);
+  line-height: 1.05;
+  max-width: 580px;
+}
+
+.trainer-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.trainer-grid article {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.trainer-grid h3 {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.trainer-grid p {
+  color: #d7e6e1;
+  font-size: 0.93rem;
+  font-weight: 650;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
 .stepper button {
   align-items: center;
   background: #fff;
@@ -634,6 +679,87 @@ h2 {
   margin-top: 2px;
 }
 
+.practice-lab {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+
+.practice-head {
+  align-items: end;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.practice-head h2 {
+  font-size: 1.18rem;
+}
+
+.practice-head p:not(.eyebrow) {
+  color: var(--muted);
+  font-weight: 700;
+  line-height: 1.55;
+  margin-top: 6px;
+}
+
+.practice-field {
+  display: grid;
+  gap: 9px;
+}
+
+.practice-field span,
+.prompt-compare span {
+  color: var(--green);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.practice-field textarea {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  line-height: 1.6;
+  min-height: 120px;
+  outline: none;
+  padding: 12px;
+  resize: vertical;
+  width: 100%;
+}
+
+.practice-field textarea:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(34, 114, 91, 0.12);
+}
+
+.prompt-compare,
+.practice-review {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.prompt-compare article {
+  background: #fbfdfb;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.prompt-compare pre {
+  color: var(--ink);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  margin: 9px 0 0;
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
 .review-grid {
   display: grid;
   gap: 10px;
@@ -921,6 +1047,10 @@ h2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .trainer-guide {
+    grid-template-columns: 1fr;
+  }
+
   .guide-lead {
     border-bottom: 1px solid var(--line);
     border-right: 0;
@@ -1024,6 +1154,8 @@ h2 {
   .work-list,
   .guide-grid,
   .guide-flow,
+  .prompt-compare,
+  .practice-review,
   .review-grid {
     grid-template-columns: 1fr;
   }
@@ -1088,9 +1220,11 @@ h2 {
   }
 
   .step-card-head,
+  .practice-head,
   .suggestion-list li,
   .training-note,
   .completion-note {
+    display: grid;
     grid-template-columns: 1fr;
   }
 
