@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  ArrowDown,
   ArrowRight,
+  ArrowUp,
   BookOpenCheck,
   CheckCircle2,
   ClipboardList,
@@ -148,6 +150,8 @@ function App() {
   const [customMaterialsByWork, setCustomMaterialsByWork] = useState({});
   const [customOutputsByWork, setCustomOutputsByWork] = useState({});
   const [removedDefaultMaterialsByWork, setRemovedDefaultMaterialsByWork] = useState({});
+  const [removedDefaultOutputsByWork, setRemovedDefaultOutputsByWork] = useState({});
+  const [outputOrderByWork, setOutputOrderByWork] = useState({});
   const [roleByWork, setRoleByWork] = useState({});
   const [checkedReviews, setCheckedReviews] = useState([]);
 
@@ -159,11 +163,17 @@ function App() {
   const customMaterials = selectedId ? customMaterialsByWork[selectedId] ?? [] : [];
   const customOutputs = selectedId ? customOutputsByWork[selectedId] ?? [] : [];
   const removedDefaultMaterials = selectedId ? removedDefaultMaterialsByWork[selectedId] ?? [] : [];
+  const removedDefaultOutputs = selectedId ? removedDefaultOutputsByWork[selectedId] ?? [] : [];
   const defaultMaterials = selectedScenario
     ? selectedScenario.sourceMaterials.filter((item) => !removedDefaultMaterials.includes(item))
     : [];
+  const defaultOutputs = selectedScenario
+    ? selectedScenario.outputFormat.filter((item) => !removedDefaultOutputs.includes(item))
+    : [];
   const sourceMaterials = selectedScenario ? [...defaultMaterials, ...customMaterials] : [];
-  const outputFormat = selectedScenario ? [...selectedScenario.outputFormat, ...customOutputs] : [];
+  const outputFormat = selectedScenario
+    ? reconcileOrder(outputOrderByWork[selectedId] ?? [], [...defaultOutputs, ...customOutputs])
+    : [];
   const roleText = selectedScenario ? roleByWork[selectedId] ?? selectedScenario.role : "";
 
   useEffect(() => {
@@ -285,13 +295,54 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
       setCustomOutputInput("");
       return;
     }
+    if (removedDefaultOutputs.includes(output)) {
+      setRemovedDefaultOutputsByWork((current) => removeItem(current, selectedId, output));
+      setOutputOrderByWork((current) => ({
+        ...current,
+        [selectedId]: [...(current[selectedId] ?? outputFormat), output],
+      }));
+      setCustomOutputInput("");
+      return;
+    }
 
     setCustomOutputsByWork((current) => appendUnique(current, selectedId, output));
     setCustomOutputInput("");
   }
 
-  function removeCustomOutput(output) {
-    setCustomOutputsByWork((current) => removeItem(current, selectedId, output));
+  function removeOutput(output) {
+    if (!selectedScenario || !selectedId) return;
+
+    if (customOutputs.includes(output)) {
+      setCustomOutputsByWork((current) => removeItem(current, selectedId, output));
+    } else {
+      setRemovedDefaultOutputsByWork((current) => appendUnique(current, selectedId, output));
+    }
+
+    setOutputOrderByWork((current) => ({
+      ...current,
+      [selectedId]: (current[selectedId] ?? outputFormat).filter((item) => item !== output),
+    }));
+  }
+
+  function restoreDefaultOutputs() {
+    if (!selectedId || !selectedScenario) return;
+    setRemovedDefaultOutputsByWork((current) => ({ ...current, [selectedId]: [] }));
+    setOutputOrderByWork((current) => ({
+      ...current,
+      [selectedId]: [...selectedScenario.outputFormat, ...customOutputs],
+    }));
+  }
+
+  function moveOutput(output, direction) {
+    if (!selectedId) return;
+
+    setOutputOrderByWork((current) => {
+      const currentOrder = reconcileOrder(current[selectedId] ?? outputFormat, outputFormat);
+      return {
+        ...current,
+        [selectedId]: moveItem(currentOrder, output, direction),
+      };
+    });
   }
 
   function updateRole(value) {
@@ -318,7 +369,7 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
       <header className="hero">
         <div className="hero-content">
           <p className="eyebrow">일반 직장인을 위한 AI 업무 운영 훈련</p>
-          <h1>업무 하나를 골라 AI에게 맡기는 기준을 직접 만들어봅니다.</h1>
+          <h1>AI에게 일을 맡기기 전, 업무의 기준부터 설계합니다.</h1>
         </div>
         <div className="hero-actions">
           <button className="ghost-button" onClick={goToGuide}>
@@ -427,10 +478,17 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
               <SuggestionList
                 customItems={customOutputs}
                 items={outputFormat}
-                onRemoveItem={removeCustomOutput}
-                removableItems={customOutputs}
+                movable
+                onMoveItem={moveOutput}
+                onRemoveItem={removeOutput}
+                removableItems={outputFormat}
                 ordered
               />
+              {removedDefaultOutputs.length > 0 && (
+                <button className="restore-button" onClick={restoreDefaultOutputs}>
+                  기본 출력 항목 복원
+                </button>
+              )}
               <Adder
                 buttonLabel="항목 추가"
                 label="우리 팀 출력 항목 추가"
@@ -607,6 +665,25 @@ function removeItem(current, key, item) {
   return { ...current, [key]: (current[key] ?? []).filter((entry) => entry !== item) };
 }
 
+function reconcileOrder(order, items) {
+  const orderedItems = order.filter((item) => items.includes(item));
+  const newItems = items.filter((item) => !orderedItems.includes(item));
+  return [...orderedItems, ...newItems];
+}
+
+function moveItem(items, item, direction) {
+  const index = items.indexOf(item);
+  const nextIndex = direction === "up" ? index - 1 : index + 1;
+
+  if (index < 0 || nextIndex < 0 || nextIndex >= items.length) {
+    return items;
+  }
+
+  const nextItems = [...items];
+  [nextItems[index], nextItems[nextIndex]] = [nextItems[nextIndex], nextItems[index]];
+  return nextItems;
+}
+
 function StepCard({ icon: Icon, title, text, children }) {
   return (
     <article className="step-card">
@@ -622,20 +699,48 @@ function StepCard({ icon: Icon, title, text, children }) {
   );
 }
 
-function SuggestionList({ customItems = [], items, onRemoveItem, ordered = false, removableItems = [] }) {
+function SuggestionList({
+  customItems = [],
+  items,
+  movable = false,
+  onMoveItem,
+  onRemoveItem,
+  ordered = false,
+  removableItems = [],
+}) {
   const Tag = ordered ? "ol" : "ul";
 
   return (
     <Tag className="suggestion-list">
-      {items.map((item) => (
+      {items.map((item, index) => (
         <li className={customItems.includes(item) ? "is-custom" : ""} key={item}>
           <CheckCircle2 size={18} />
           <span>{item}</span>
-          {removableItems.includes(item) && (
-            <button aria-label={`${item} 삭제`} onClick={() => onRemoveItem(item)}>
-              <X size={16} />
-            </button>
-          )}
+          <div className="suggestion-actions">
+            {movable && (
+              <>
+                <button
+                  aria-label={`${item} 위로 이동`}
+                  disabled={index === 0}
+                  onClick={() => onMoveItem(item, "up")}
+                >
+                  <ArrowUp size={15} />
+                </button>
+                <button
+                  aria-label={`${item} 아래로 이동`}
+                  disabled={index === items.length - 1}
+                  onClick={() => onMoveItem(item, "down")}
+                >
+                  <ArrowDown size={15} />
+                </button>
+              </>
+            )}
+            {removableItems.includes(item) && (
+              <button aria-label={`${item} 삭제`} onClick={() => onRemoveItem(item)}>
+                <X size={16} />
+              </button>
+            )}
+          </div>
         </li>
       ))}
     </Tag>

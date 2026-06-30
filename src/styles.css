@@ -510,7 +510,14 @@ h2 {
   line-height: 1.45;
 }
 
-.suggestion-list li > button {
+.suggestion-actions {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 5px;
+  justify-content: flex-end;
+}
+
+.suggestion-actions button {
   align-items: center;
   background: #fff;
   border: 1px solid var(--line);
@@ -521,6 +528,10 @@ h2 {
   justify-content: center;
   padding: 0;
   width: 30px;
+}
+
+.suggestion-actions button:disabled {
+  opacity: 0.28;
 }
 
 .restore-button {
@@ -1077,9 +1088,14 @@ h2 {
   }
 
   .step-card-head,
+  .suggestion-list li,
   .training-note,
   .completion-note {
     grid-template-columns: 1fr;
+  }
+
+  .suggestion-actions {
+    justify-content: flex-start;
   }
 
   .material-adder > div {
