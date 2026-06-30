@@ -914,8 +914,8 @@ function PracticeLab({
       <div className="practice-head">
         <div>
           <p className="eyebrow">Practice Lab</p>
-          <h2>실제 업무자료로 훈련 효과 확인</h2>
-          <p>같은 자료라도 막연한 요청과 구조화된 요청은 결과가 달라집니다.</p>
+          <h2>실제 자료로 프롬프트를 검증합니다.</h2>
+          <p>자료를 넣고, 완성된 요청문을 AI에 복사한 뒤, 결과를 사람이 검토합니다.</p>
         </div>
         <button className="restore-button" onClick={onCopyPracticePrompt}>
           <Copy size={16} />
@@ -923,8 +923,23 @@ function PracticeLab({
         </button>
       </div>
 
+      <div className="practice-steps" aria-label="실습 순서">
+        <article>
+          <span>1</span>
+          <p>실제 업무자료를 붙여넣습니다.</p>
+        </article>
+        <article>
+          <span>2</span>
+          <p>오른쪽 최종 요청문을 복사해 AI에 넣습니다.</p>
+        </article>
+        <article>
+          <span>3</span>
+          <p>AI 결과를 아래에 붙이고 사람이 검토합니다.</p>
+        </article>
+      </div>
+
       <label className="practice-field">
-        <span>실제 업무자료 입력</span>
+        <span>1. 실제 업무자료 붙여넣기</span>
         <textarea
           onChange={(event) => onChangePracticeData(event.target.value)}
           placeholder={scenario.practice}
@@ -934,18 +949,20 @@ function PracticeLab({
 
       <div className="prompt-compare">
         <article>
-          <span>훈련 전 요청</span>
+          <span>비교용: 막연한 요청</span>
+          <small>이 박스는 비교용입니다. 복사하지 않아도 됩니다.</small>
           <pre>{beforePrompt}</pre>
         </article>
-        <article>
-          <span>훈련 후 요청</span>
+        <article className="is-practice-prompt">
+          <span>2. AI에 넣을 최종 요청문</span>
+          <small>이 요청문을 복사해 AI에 넣으면 됩니다.</small>
           <pre>{practicePrompt}</pre>
         </article>
       </div>
 
       <div className="practice-review">
         <label className="practice-field">
-          <span>AI 결과 초안 붙여넣기</span>
+          <span>3. AI 결과 초안 붙여넣기</span>
           <textarea
             onChange={(event) => onChangeAiDraft(event.target.value)}
             placeholder="복사한 실습 프롬프트를 AI에 넣은 뒤 결과 초안을 붙여넣어 비교합니다."
@@ -953,7 +970,7 @@ function PracticeLab({
           />
         </label>
         <label className="practice-field">
-          <span>사람 검토 및 개선 메모</span>
+          <span>4. 사람 검토 및 개선 메모</span>
           <textarea
             onChange={(event) => onChangeReviewMemo(event.target.value)}
             placeholder="사실, 수치, 사내 기준, 민감정보, 실행 가능성을 검토한 뒤 다음에 보완할 점을 적습니다."
