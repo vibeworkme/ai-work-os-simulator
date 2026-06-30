@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   BookOpenCheck,
@@ -6,9 +6,9 @@ import {
   ClipboardList,
   Copy,
   FileText,
-  GraduationCap,
   Layers3,
   Mail,
+  Map,
   Plus,
   Radar,
   RefreshCw,
@@ -133,13 +133,14 @@ const guideReasons = [
 ];
 
 const weaveCapabilities = [
-  { icon: GraduationCap, title: "AI 교육 및 워크숍" },
+  { icon: Sparkles, title: "바이브코딩 워크숍" },
+  { icon: Radar, title: "AI기반 문제해결 워크숍" },
+  { icon: Workflow, title: "업무자동화 & AI 에이전트 교육 및 컨설팅" },
   { icon: Route, title: "창업교육 및 진로설계" },
-  { icon: Radar, title: "AI 기반 진단 서비스" },
-  { icon: Workflow, title: "업무 자동화 및 AI 에이전트" },
 ];
 
 function App() {
+  const [page, setPage] = useState(() => (window.location.hash === "#guide" ? "guide" : "training"));
   const [selectedId, setSelectedId] = useState("");
   const [activeStep, setActiveStep] = useState(1);
   const [customMaterialInput, setCustomMaterialInput] = useState("");
@@ -164,6 +165,15 @@ function App() {
   const sourceMaterials = selectedScenario ? [...defaultMaterials, ...customMaterials] : [];
   const outputFormat = selectedScenario ? [...selectedScenario.outputFormat, ...customOutputs] : [];
   const roleText = selectedScenario ? roleByWork[selectedId] ?? selectedScenario.role : "";
+
+  useEffect(() => {
+    function syncPageWithHash() {
+      setPage(window.location.hash === "#guide" ? "guide" : "training");
+    }
+
+    window.addEventListener("hashchange", syncPageWithHash);
+    return () => window.removeEventListener("hashchange", syncPageWithHash);
+  }, []);
 
   const promptTemplate = useMemo(() => {
     if (!selectedScenario) {
@@ -221,6 +231,19 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
     setCustomMaterialInput("");
     setCustomOutputInput("");
     setCheckedReviews([]);
+    goToTraining();
+  }
+
+  function goToGuide() {
+    window.location.hash = "guide";
+    setPage("guide");
+  }
+
+  function goToTraining() {
+    if (window.location.hash) {
+      window.history.pushState("", document.title, window.location.pathname + window.location.search);
+    }
+    setPage("training");
   }
 
   function addCustomMaterial() {
@@ -286,42 +309,28 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
     await navigator.clipboard.writeText(promptTemplate);
   }
 
+  if (page === "guide") {
+    return <GuidePage onBack={goToTraining} />;
+  }
+
   return (
     <main className="app-shell">
       <header className="hero">
-        <div>
+        <div className="hero-content">
           <p className="eyebrow">일반 직장인을 위한 AI 업무 운영 훈련</p>
           <h1>업무 하나를 골라 AI에게 맡기는 기준을 직접 만들어봅니다.</h1>
         </div>
-        <button className="reset-button" onClick={reset}>
-          <RefreshCw size={18} />
-          처음부터
-        </button>
+        <div className="hero-actions">
+          <button className="ghost-button" onClick={goToGuide}>
+            <Map size={18} />
+            가이드 문서
+          </button>
+          <button className="reset-button" onClick={reset}>
+            <RefreshCw size={18} />
+            처음부터
+          </button>
+        </div>
       </header>
-
-      <section className="guide-document" aria-labelledby="guide-title">
-        <div className="guide-lead">
-          <p className="eyebrow">Training Guide</p>
-          <h2 id="guide-title">왜 이런 훈련이 필요한가</h2>
-          <p>
-            이 훈련은 프롬프트 문장을 멋지게 쓰는 연습이 아닙니다. 내 업무를 AI가 처리 가능한 형태로
-            구조화하고, 사람이 검토할 수 있는 결과물로 만드는 연습입니다.
-          </p>
-        </div>
-        <div className="guide-grid">
-          {guideReasons.map((reason, index) => (
-            <article key={reason.title}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <h3>{reason.title}</h3>
-              <p>{reason.text}</p>
-            </article>
-          ))}
-        </div>
-        <div className="guide-rule">
-          <strong>훈련 원칙</strong>
-          <p>업무 선정 → 기준 자료 구성 → AI 역할 설정 → 출력 형식 표준화 → 사람 검토 순서로 진행합니다.</p>
-        </div>
-      </section>
 
       <nav className="stepper" aria-label="진행 단계">
         {steps.map((step, index) => (
@@ -490,13 +499,12 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
       <section className="weave-section">
         <div className="weave-wordmark" aria-hidden="true">WEAVE&</div>
         <div className="weave-story">
-          <p className="eyebrow">Built by WEAVE&</p>
+          <p className="eyebrow">위브앤 소개</p>
           <h2>AI로 사람의 가능성을 발견하고 실행으로 연결합니다.</h2>
           <div className="weave-copy">
             <p>
-              위브앤은 AI, 창업교육, 진로설계 분야에서 활동하는 교육·컨설팅 기업입니다. 우리는 단순히
-              정보를 제공하는 것을 넘어, 사람들이 자신의 강점과 가능성을 발견하고 실제 행동으로 옮길 수
-              있도록 돕는 도구와 프로그램을 만듭니다.
+              위브앤은 바이브코딩 워크숍, AI기반 문제해결 워크숍, 업무자동화와 AI 에이전트 교육 및
+              컨설팅, 창업교육과 진로설계를 연결하는 교육·컨설팅 기업입니다.
             </p>
             <p>
               이 훈련실은 같은 철학에서 출발했습니다. AI를 잘 쓰는 개인을 넘어서, 자신의 업무를 AI와 함께
@@ -527,6 +535,67 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
     </main>
   );
 }
+
+function GuidePage({ onBack }) {
+  return (
+    <main className="app-shell">
+      <header className="hero hero-guide">
+        <div className="hero-content">
+          <p className="eyebrow">Training Guide</p>
+          <h1>왜 이런 훈련이 필요한가</h1>
+        </div>
+        <button className="reset-button" onClick={onBack}>
+          <ArrowRight className="turn-back" size={18} />
+          훈련실로 돌아가기
+        </button>
+      </header>
+
+      <section className="guide-page">
+        <section className="guide-document" aria-labelledby="guide-title">
+          <div className="guide-lead">
+            <p className="eyebrow">Why It Matters</p>
+            <h2 id="guide-title">AI를 잘 쓰는 훈련은 업무를 다시 설계하는 훈련입니다.</h2>
+            <p>
+              이 훈련은 프롬프트 문장을 멋지게 쓰는 연습이 아닙니다. 내 업무를 AI가 처리 가능한 형태로
+              구조화하고, 사람이 검토할 수 있는 결과물로 만드는 연습입니다.
+            </p>
+          </div>
+          <div className="guide-grid">
+            {guideReasons.map((reason, index) => (
+              <article key={reason.title}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <h3>{reason.title}</h3>
+                <p>{reason.text}</p>
+              </article>
+            ))}
+          </div>
+          <div className="guide-rule">
+            <strong>훈련 원칙</strong>
+            <p>업무 선정 → 기준 자료 구성 → AI 역할 설정 → 출력 형식 표준화 → 사람 검토 순서로 진행합니다.</p>
+          </div>
+        </section>
+
+        <section className="guide-flow" aria-label="훈련 흐름">
+          {steps.map((step, index) => (
+            <article key={step.id}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <h2>{step.label}</h2>
+              <p>{guideFlowText[step.id]}</p>
+            </article>
+          ))}
+        </section>
+      </section>
+    </main>
+  );
+}
+
+const guideFlowText = {
+  1: "모든 업무가 아니라 반복되고, 자료가 있고, 사람이 최종 검토할 수 있는 업무 하나를 고릅니다.",
+  2: "AI가 참고해야 할 최신 기준 자료를 정리하고, 우리 조직 자료를 추가하거나 불필요한 기본 자료를 삭제합니다.",
+  3: "AI를 일반 도우미가 아니라 선택한 업무를 맡는 전담 보조자로 고정합니다.",
+  4: "결과물이 팀에서 바로 검토될 수 있도록 항목과 순서를 표준화합니다.",
+  5: "AI 결과물을 최종 답이 아닌 초안으로 보고, 사실·수치·보안·실행 가능성을 사람이 확인합니다.",
+};
 
 function appendUnique(current, key, item) {
   const currentItems = current[key] ?? [];

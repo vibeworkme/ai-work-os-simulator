@@ -54,16 +54,43 @@ button:disabled {
 
 .hero {
   align-items: end;
-  background: rgba(255, 255, 255, 0.94);
+  background:
+    linear-gradient(90deg, rgba(6, 16, 24, 0.92) 0%, rgba(6, 16, 24, 0.7) 36%, rgba(6, 16, 24, 0.1) 72%),
+    url("/images/ai-workshop-hero.png") center / cover;
   border-bottom: 1px solid var(--line);
+  color: #fff;
   display: flex;
   gap: 20px;
   justify-content: space-between;
+  min-height: clamp(360px, 48vw, 560px);
   padding: 28px clamp(18px, 4vw, 44px);
 }
 
 .hero > div {
   min-width: 0;
+}
+
+.hero-content {
+  max-width: 860px;
+}
+
+.hero-content .eyebrow {
+  color: #99f6e4;
+}
+
+.hero-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.hero-guide {
+  background:
+    linear-gradient(90deg, rgba(6, 16, 24, 0.94) 0%, rgba(6, 16, 24, 0.78) 46%, rgba(6, 16, 24, 0.18) 100%),
+    url("/images/ai-workshop-hero.png") center / cover;
+  min-height: 420px;
 }
 
 .eyebrow {
@@ -94,6 +121,7 @@ h2 {
 }
 
 .reset-button,
+.ghost-button,
 .next-button,
 .prompt-head button,
 .restore-button,
@@ -112,6 +140,7 @@ h2 {
 }
 
 .reset-button,
+.ghost-button,
 .prompt-head button,
 .restore-button {
   background: #fff;
@@ -129,11 +158,16 @@ h2 {
 }
 
 .reset-button:hover,
+.ghost-button:hover,
 .next-button:hover,
 .prompt-head button:hover,
 .restore-button:hover,
 .material-adder button:hover {
   transform: translateY(-1px);
+}
+
+.turn-back {
+  transform: rotate(180deg);
 }
 
 .stepper {
@@ -156,6 +190,18 @@ h2 {
   margin: 24px auto 0;
   max-width: 1220px;
   padding: clamp(18px, 3vw, 30px);
+}
+
+.guide-page {
+  display: grid;
+  gap: 22px;
+  margin: 0 auto;
+  max-width: 1220px;
+  padding: 32px clamp(18px, 4vw, 44px) 64px;
+}
+
+.guide-page .guide-document {
+  margin-top: 0;
 }
 
 .guide-document > * {
@@ -245,6 +291,40 @@ h2 {
   line-height: 1.45;
   overflow-wrap: anywhere;
   word-break: break-all;
+}
+
+.guide-flow {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.guide-flow article {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 210px;
+  padding: 16px;
+}
+
+.guide-flow span {
+  color: var(--green);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.guide-flow h2 {
+  font-size: 1.05rem;
+  line-height: 1.35;
+  margin-top: 16px;
+}
+
+.guide-flow p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 650;
+  line-height: 1.55;
+  margin-top: 10px;
 }
 
 .stepper button {
@@ -826,6 +906,10 @@ h2 {
     grid-template-columns: 1fr;
   }
 
+  .guide-flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .guide-lead {
     border-bottom: 1px solid var(--line);
     border-right: 0;
@@ -852,6 +936,7 @@ h2 {
   .hero {
     align-items: start;
     flex-direction: column;
+    justify-content: end;
   }
 
   .workspace {
@@ -883,6 +968,7 @@ h2 {
   }
 
   .hero,
+  .guide-page,
   .workspace,
   .guide-document,
   .stepper {
@@ -902,6 +988,7 @@ h2 {
   }
 
   .hero > div,
+  .hero-actions,
   .main-panel,
   .side-panel,
   .step-card,
@@ -917,6 +1004,7 @@ h2 {
   }
 
   .reset-button,
+  .ghost-button,
   .next-button {
     max-width: 350px;
     width: 100%;
@@ -924,8 +1012,13 @@ h2 {
 
   .work-list,
   .guide-grid,
+  .guide-flow,
   .review-grid {
     grid-template-columns: 1fr;
+  }
+
+  .guide-flow article {
+    min-height: auto;
   }
 
   .guide-rule {
