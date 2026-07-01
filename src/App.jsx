@@ -725,22 +725,32 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
       <section className="weave-section">
         <div className="weave-wordmark" aria-hidden="true">WEAVE&</div>
         <div className="weave-story">
-          <p className="eyebrow">위브앤 소개</p>
-          <h2>좋은 AI 결과는 좋은 프롬프트에서 시작되지 않습니다.</h2>
+          <p className="eyebrow">WEAVE&</p>
+          <h2>
+            좋은 AI 결과는
+            <span className="weave-accent">프롬프트에서</span>
+            <span>시작되지 않습니다.</span>
+            <span className="weave-accent">잘 설계된 업무에서</span>
+            <span>시작됩니다.</span>
+          </h2>
           <div className="weave-copy">
-            <p>잘 설계된 업무에서 시작됩니다.</p>
+            <strong>AI 업무 운영 훈련실</strong>
             <p>
-              AI 업무 운영 훈련실은 직장인이 자신의 업무를 AI가 실행 가능한 형태로 구조화하고, 실제 업무에
-              적용할 수 있도록 돕는 실습형 학습 도구입니다.
+              직장인이 자신의 업무를 AI가 이해하고 실행할 수 있는 형태로 설계하고 연습하는 실습형 학습
+              도구입니다.
             </p>
           </div>
-          <div className="weave-powered">Powered by WEAVE& | AI Learning OS</div>
+          <div className="weave-powered">
+            <span>Powered by WEAVE&</span>
+            <strong>AI Learning OS</strong>
+          </div>
         </div>
         <div className="weave-card">
           <blockquote>
             <span>기술보다</span>
             <span>중요한 것은</span>
-            <span>사람의 가능성입니다.</span>
+            <span>업무를 설계하는</span>
+            <span>능력입니다.</span>
           </blockquote>
           <div className="weave-capabilities">
             {weaveCapabilities.map(({ icon: Icon, title }) => (

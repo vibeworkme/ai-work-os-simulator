@@ -7,7 +7,7 @@
 - [서비스 소개](https://ai-work-os-simulator.vercel.app/about/): AI Learning OS for Knowledge Workers의 목적, 대상, 핵심 가치
 - [훈련 가이드](https://ai-work-os-simulator.vercel.app/guide/): 왜 이런 훈련이 필요한지에 대한 설명
 - [훈련 과정](https://ai-work-os-simulator.vercel.app/training/): AI Ready Check부터 사람 검토까지 이어지는 훈련 흐름
-- [위브앤 소개](https://ai-work-os-simulator.vercel.app/weavend/): 위브앤의 교육 및 컨설팅 분야
+- [WEAVE&](https://ai-work-os-simulator.vercel.app/weavend/): AI Learning OS 운영 주체와 교육 및 컨설팅 분야
 - [FAQ](https://ai-work-os-simulator.vercel.app/faq/): 자주 묻는 질문과 답변
 - [전체 AI용 설명](https://ai-work-os-simulator.vercel.app/llms-full.txt): AI 챗봇과 검색엔진을 위한 전체 텍스트 요약
 
@@ -28,6 +28,8 @@ AI Learning OS for Knowledge Workers는 프롬프트 문장을 멋지게 쓰는 
 
 ## 운영 주체
 
-좋은 AI 결과는 좋은 프롬프트에서 시작되지 않습니다. 잘 설계된 업무에서 시작됩니다. AI 업무 운영 훈련실은 직장인이 자신의 업무를 AI가 실행 가능한 형태로 구조화하고, 실제 업무에 적용할 수 있도록 돕는 실습형 학습 도구입니다.
+좋은 AI 결과는 프롬프트에서 시작되지 않습니다. 잘 설계된 업무에서 시작됩니다. AI 업무 운영 훈련실은 직장인이 자신의 업무를 AI가 이해하고 실행할 수 있는 형태로 설계하고 연습하는 실습형 학습 도구입니다.
 
-Powered by WEAVE& | AI Learning OS
+Powered by WEAVE&
+
+AI Learning OS
