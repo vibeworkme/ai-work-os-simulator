@@ -726,17 +726,15 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
         <div className="weave-wordmark" aria-hidden="true">WEAVE&</div>
         <div className="weave-story">
           <p className="eyebrow">위브앤 소개</p>
-          <h2>AI로 사람의 가능성을 발견하고 실행으로 연결합니다.</h2>
+          <h2>좋은 AI 결과는 좋은 프롬프트에서 시작되지 않습니다.</h2>
           <div className="weave-copy">
+            <p>잘 설계된 업무에서 시작됩니다.</p>
             <p>
-              위브앤은 바이브코딩 워크숍, AI기반 문제해결 워크숍, 업무자동화와 AI 에이전트 교육 및
-              컨설팅, 창업교육과 진로설계를 연결하는 교육·컨설팅 기업입니다.
-            </p>
-            <p>
-              이 훈련실은 같은 철학에서 출발했습니다. AI를 잘 쓰는 개인을 넘어서, 자신의 업무를 AI와 함께
-              실행 가능한 방식으로 재설계하는 직장인을 돕기 위한 연습 도구입니다.
+              AI 업무 운영 훈련실은 직장인이 자신의 업무를 AI가 실행 가능한 형태로 구조화하고, 실제 업무에
+              적용할 수 있도록 돕는 실습형 학습 도구입니다.
             </p>
           </div>
+          <div className="weave-powered">Powered by WEAVE& | AI Learning OS</div>
         </div>
         <div className="weave-card">
           <blockquote>

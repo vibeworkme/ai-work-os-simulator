@@ -1411,6 +1411,18 @@ h2 {
   padding-left: 16px;
 }
 
+.weave-powered {
+  border: 1px solid rgba(153, 246, 228, 0.24);
+  border-radius: 8px;
+  color: #b8d8cf;
+  display: inline-flex;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-top: 24px;
+  padding: 10px 12px;
+}
+
 .weave-card {
   align-self: center;
   background: rgba(255, 255, 255, 0.08);
