@@ -1,914 +1,1457 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Check,
-  ChevronRight,
-  Clipboard,
+  ArrowDown,
+  ArrowRight,
+  ArrowUp,
+  BookOpenCheck,
+  CheckCircle2,
+  ClipboardList,
   Copy,
-  Download,
   FileText,
-  Film,
-  Megaphone,
-  MonitorPlay,
-  Play,
+  Layers3,
+  Mail,
+  Map,
+  Plus,
+  Radar,
   RefreshCw,
   Save,
+  Route,
+  ShieldCheck,
   Sparkles,
-  Target,
-  Wand2,
+  UserRoundCog,
+  Workflow,
+  X,
 } from "lucide-react";
 
-const STORAGE_KEY = "shortform-ad-classroom-simulator-v1";
-
-const sessions = [
+const scenarios = [
   {
-    id: "topic",
-    time: "0:00-1:00",
-    title: "광고 주제 정하기",
-    goal: "제품, 타깃, 광고 목적을 정하고 프로젝트 방향을 한 문장으로 만든다.",
-    tool: "Google Pomelli, Chat 보조 설명",
-    output: "광고 기획 문장, 타깃 정의, 광고 목적",
-    teacherCue: "좋은 광고는 멋진 영상보다 먼저 정확한 타깃과 목적에서 시작한다는 점을 짚어주세요.",
+    id: "meeting",
+    work: "회의록 정리",
+    why: "반복적이고 형식이 일정하며, 사람이 최종 확인하면 바로 업무에 쓸 수 있습니다.",
+    sourceMaterials: ["회의 녹취 또는 회의 메모", "기존 회의록 양식", "참석자 명단", "지난 회의 실행계획"],
+    role: "너는 회의 내용을 실행계획 중심으로 정리하는 AI다.",
+    outputFormat: ["회의 요약", "주요 결정사항", "논의된 쟁점", "실행계획", "담당자", "기한", "확인 필요사항"],
+    practice: "지난 회의 메모를 붙여 넣고, 결정사항과 실행계획만 분리해보세요.",
   },
   {
-    id: "message",
-    time: "1:00-2:00",
-    title: "콘셉트 및 메시지 만들기",
-    goal: "훅, 핵심 베네핏, CTA를 조합해 숏폼 광고 메시지를 만든다.",
-    tool: "Google Pomelli",
-    output: "광고 콘셉트 1개, 핵심 카피 3안",
-    teacherCue: "학생들이 기능을 많이 쓰기보다 하나의 베네핏으로 압축하도록 유도하세요.",
+    id: "report",
+    work: "보고서 초안 작성",
+    why: "초안 작성 시간이 길고, 기존 양식과 지표가 있으면 결과 품질을 안정화할 수 있습니다.",
+    sourceMaterials: ["보고서 양식", "관련 지표 또는 수치", "이전 보고서 샘플", "부서별 코멘트"],
+    role: "너는 월간 또는 주간 보고서 초안을 작성하는 업무 지원 AI다.",
+    outputFormat: ["핵심 요약", "현황", "주요 지표", "문제점", "원인", "개선안", "보고 대상 확인사항"],
+    practice: "이번 주 지표와 팀 코멘트를 기준으로 1페이지 보고서 초안을 만들어보세요.",
   },
   {
-    id: "storyboard",
-    time: "2:00-3:00",
-    title: "스토리보드 설계",
-    goal: "15-30초 광고를 3-5개 장면으로 나누고 장면별 역할을 정한다.",
-    tool: "Google Vids",
-    output: "3-5컷 스토리보드",
-    teacherCue: "각 장면이 훅, 문제, 제품, 증거, 행동유도 중 어떤 역할인지 말하게 해보세요.",
+    id: "proposal",
+    work: "제안서 작성",
+    why: "제안서는 구조가 중요하므로, 샘플과 고객 요구사항을 기준 자료로 잡으면 재사용성이 높습니다.",
+    sourceMaterials: ["고객 요구사항", "기존 제안서 샘플", "제품 또는 서비스 소개자료", "가격/조건 기준"],
+    role: "너는 영업 제안서의 구조와 초안을 잡아주는 AI다.",
+    outputFormat: ["제안 배경", "고객 요구 이해", "제안 내용", "기대 효과", "일정", "비용 또는 조건", "추가 확인사항"],
+    practice: "고객 요구사항 3개를 입력하고, 제안서 목차와 핵심 문구를 뽑아보세요.",
   },
   {
-    id: "prompt",
-    time: "3:00-4:00",
-    title: "AI 생성용 프롬프트 만들기",
-    goal: "제품, 모델, 배경, 조명, 무드, 카메라 구도를 구조화한다.",
-    tool: "Google Flow",
-    output: "씬별 프롬프트 세트",
-    teacherCue: "프롬프트는 문장이 아니라 촬영 지시서라는 관점으로 작성하게 해주세요.",
+    id: "support",
+    work: "고객 문의 답변",
+    why: "FAQ와 정책을 기준으로 답변 초안을 만들고, 민감 표현은 사람이 검토하기 좋습니다.",
+    sourceMaterials: ["고객 문의 원문", "고객 FAQ", "응대 매뉴얼", "환불/교환/계약 관련 정책"],
+    role: "너는 고객 문의에 대해 사내 기준에 맞는 답변 초안을 작성하는 AI다.",
+    outputFormat: ["문의 요약", "답변 초안", "근거 기준", "확인 필요 정보", "민감 표현 점검"],
+    practice: "고객 문의 한 건을 입력하고, 답변 초안과 확인 필요 정보를 분리해보세요.",
   },
   {
-    id: "shot",
-    time: "4:00-5:00",
-    title: "핵심 컷 생성하기",
-    goal: "대표 장면 후보를 비교하고 숏폼에 맞는 핵심 컷을 선정한다.",
-    tool: "Google Flow",
-    output: "핵심 장면 이미지/영상 컷",
-    teacherCue: "예쁜 컷이 아니라 타깃, 브랜드 톤, 세로형 화면에 가장 맞는 컷을 고르게 하세요.",
+    id: "quality",
+    work: "품질 이슈 원인 분석",
+    why: "기준서, 검사 데이터, 현장 코멘트를 함께 보면 원인 후보와 개선안을 구조화할 수 있습니다.",
+    sourceMaterials: ["품질 기준서", "불량 또는 이슈 기록", "검사 데이터", "현장 코멘트", "이전 개선 사례"],
+    role: "너는 품질보증팀의 이슈 원인 분석을 돕는 AI다.",
+    outputFormat: ["이슈 요약", "현재 현황", "가능 원인", "근거 자료", "개선안", "담당자", "기한", "리스크"],
+    practice: "불량 기록과 현장 코멘트를 넣고, 확인된 원인과 가설을 나눠보세요.",
   },
   {
-    id: "edit",
-    time: "5:00-6:00",
-    title: "숏폼 영상 편집",
-    goal: "장면 순서, 자막, 리듬, CTA를 점검해 1차 광고 영상을 만든다.",
-    tool: "CapCut",
-    output: "1차 숏폼 광고 영상",
-    teacherCue: "전환 효과보다 첫 3초, 자막 가독성, CTA 명확성을 우선 점검하게 해주세요.",
+    id: "production",
+    work: "생산 현황 요약",
+    why: "수치와 기준이 명확해 AI가 계획 대비 차이, 병목, 납기 리스크를 정리하기 좋습니다.",
+    sourceMaterials: ["생산 계획", "실적 데이터", "설비 가동률", "재고 또는 자재 현황", "납기 기준"],
+    role: "너는 생산관리 현황을 요약하고 병목을 정리하는 AI다.",
+    outputFormat: ["생산 현황", "계획 대비 차이", "병목 또는 지연 요인", "조치 필요사항", "담당 부서", "납기 리스크"],
+    practice: "일일 생산량과 계획 수량을 넣고, 지연 요인과 조치 필요사항을 뽑아보세요.",
   },
   {
-    id: "portfolio",
-    time: "6:00-7:00",
-    title: "포트폴리오 정리 및 피드백",
-    goal: "기획 의도, 타깃, AI 활용 방식, 결과물을 취업용 포트폴리오 문장으로 정리한다.",
-    tool: "Google Vids, CapCut",
-    output: "최종 숏폼 광고 영상, 포트폴리오 설명문",
-    teacherCue: "결과물만 보여주지 말고 판단 과정과 수정 이유를 함께 발표하게 해주세요.",
+    id: "manual",
+    work: "사내 매뉴얼 검색",
+    why: "신뢰 가능한 최신 문서가 있으면 AI를 사내 지식 검색 보조자로 훈련하기 좋습니다.",
+    sourceMaterials: ["업무 매뉴얼", "사내 규정", "승인된 가이드 문서", "자주 묻는 질문"],
+    role: "너는 사내 매뉴얼과 규정을 기준으로 답변하는 업무 검색 AI다.",
+    outputFormat: ["질문 요약", "답변", "참고 문서", "근거 위치", "예외 또는 확인 필요사항"],
+    practice: "사내 규정 질문 하나를 넣고, 답변과 근거 문서를 함께 정리해보세요.",
+  },
+  {
+    id: "training",
+    work: "교육자료 제작",
+    why: "업무 매뉴얼을 교육 흐름으로 바꾸는 작업은 반복성과 형식성이 높아 훈련에 적합합니다.",
+    sourceMaterials: ["교육 대상 정보", "업무 매뉴얼", "기존 교육자료", "실습 사례", "평가 기준"],
+    role: "너는 업무 내용을 교육 흐름으로 재구성하는 교육자료 제작 AI다.",
+    outputFormat: ["교육 목표", "목차", "핵심 설명", "실습 활동", "퀴즈 또는 점검 질문", "강사용 메모"],
+    practice: "업무 매뉴얼 일부를 넣고, 30분 교육 목차와 실습 활동을 만들어보세요.",
   },
 ];
 
-const objectives = ["인지도 상승", "구매 유도", "앱 설치", "방문 예약", "회원가입", "브랜드 이미지 강화"];
-const tones = ["프리미엄", "유쾌함", "전문적", "감성적", "트렌디", "친환경", "실용적"];
-const hookBank = [
-  "아직도 이 문제를 혼자 해결하고 있나요?",
-  "딱 3초만 보면 왜 필요한지 알 수 있어요.",
-  "매일 반복되는 불편함, 이제 바꿀 시간입니다.",
-  "이런 경험, 한 번쯤 있지 않았나요?",
-  "작은 선택 하나가 하루의 흐름을 바꿉니다.",
+const steps = [
+  { id: 0, label: "AI Ready Check" },
+  { id: 1, label: "업무 선정" },
+  { id: 2, label: "기준 자료 구성" },
+  { id: 3, label: "AI 역할 설정" },
+  { id: 4, label: "출력 형식 표준화" },
+  { id: 5, label: "검토 루프" },
 ];
-const benefitBank = [
-  "시간을 줄여준다",
-  "처음 쓰는 사람도 쉽게 시작할 수 있다",
-  "결과물을 더 전문적으로 보이게 한다",
-  "반복 작업을 줄이고 중요한 일에 집중하게 한다",
-  "일상 속 불편함을 자연스럽게 해결한다",
-];
-const ctaBank = ["지금 바로 시작해보세요", "무료로 체험해보세요", "오늘부터 바꿔보세요", "자세히 확인해보세요", "내 프로젝트에 적용해보세요"];
-const sceneRoles = ["훅", "문제 제시", "제품 등장", "베네핏 증명", "CTA"];
-const visualMoods = ["밝고 깨끗한", "도시적이고 세련된", "따뜻하고 감성적인", "빠르고 역동적인", "프리미엄하고 절제된"];
-const cameraAngles = ["클로즈업", "미디엄 샷", "오버숄더", "탑뷰", "핸드헬드", "제품 매크로"];
-const editChecks = ["첫 3초 훅이 명확하다", "자막이 모바일 화면에서 잘 읽힌다", "제품/브랜드가 중간 전에 등장한다", "CTA가 마지막에 보인다", "전환 효과가 과하지 않다", "음악 리듬과 컷 길이가 맞다"];
 
-const learningGuides = {
-  topic: {
-    title: "광고 기획 문장의 구조",
-    summary: "좋은 광고 주제는 제품, 타깃, 목적, 톤이 한 문장 안에서 분명하게 보입니다.",
-    concepts: ["타깃은 넓게 잡을수록 메시지가 약해진다.", "광고 목적은 인지도, 구매, 가입, 방문처럼 행동 기준으로 정한다.", "브랜드 톤은 이후 카피, 화면, 음악 선택의 기준이 된다."],
-    badExample: "학생들을 위한 AI 광고를 만든다.",
-    goodExample: "취업 포트폴리오를 준비하는 대학생에게 AI 광고 제작 워크숍의 실습 가치를 알리기 위해 전문적인 톤의 숏폼 광고를 만든다.",
-    checklist: ["누구에게 말하는 광고인지 보이는가?", "광고 목적이 하나로 좁혀졌는가?", "브랜드 톤이 구체적인가?"],
-  },
-  message: {
-    title: "훅-베네핏-CTA 구조",
-    summary: "숏폼 광고 메시지는 첫 3초의 훅, 하나의 핵심 베네핏, 명확한 행동유도로 압축합니다.",
-    concepts: ["훅은 타깃의 문제나 욕망을 바로 건드린다.", "베네핏은 기능 목록이 아니라 사용자가 얻는 변화다.", "CTA는 학생이 영상 마지막에 무엇을 해야 하는지 알려준다."],
-    badExample: "좋은 기능이 많고 편리한 서비스입니다.",
-    goodExample: "15초 안에 광고 기획부터 프롬프트까지 완성하고, 바로 포트폴리오에 넣어보세요.",
-    checklist: ["첫 문장이 3초 안에 이해되는가?", "베네핏이 하나로 압축됐는가?", "CTA가 구체적인 행동인가?"],
-  },
-  storyboard: {
-    title: "3-5컷 스토리보드 원칙",
-    summary: "스토리보드는 예쁜 장면 목록이 아니라 설득 순서를 장면으로 나눈 설계도입니다.",
-    concepts: ["각 장면에는 훅, 문제, 제품, 증거, CTA 중 하나의 역할이 있어야 한다.", "15-30초 영상에서는 한 장면에 메시지를 하나만 담는다.", "자막은 화면 설명이 아니라 핵심 판단을 도와야 한다."],
-    badExample: "멋진 장면을 여러 개 보여준다.",
-    goodExample: "문제 상황을 3초 안에 보여주고, 제품 등장 뒤 사용 전후 차이를 비교한 다음 CTA로 닫는다.",
-    checklist: ["장면별 역할이 겹치지 않는가?", "전체 길이가 15-30초 안에 들어오는가?", "자막만 읽어도 흐름이 이해되는가?"],
-  },
-  prompt: {
-    title: "AI 생성 프롬프트의 구성 요소",
-    summary: "프롬프트는 감으로 쓰는 문장이 아니라 모델, 제품, 배경, 조명, 무드, 카메라를 정리한 촬영 지시서입니다.",
-    concepts: ["장면마다 변하지 않을 요소와 변해야 할 요소를 나눠 쓴다.", "세로형 숏폼은 vertical 9:16, close-up, readable composition처럼 화면 조건을 명시한다.", "텍스트 생성 오류를 줄이려면 no distorted text, no watermark 같은 제한을 붙인다."],
-    badExample: "광고 느낌으로 예쁘게 만들어줘.",
-    goodExample: "Vertical 9:16 short-form ad scene, young student creator using a laptop in a bright classroom, soft daylight, clean professional mood, medium shot, commercial style, no watermark.",
-    checklist: ["제품/인물/배경이 모두 들어갔는가?", "조명과 무드가 브랜드 톤과 맞는가?", "세로형 화면 조건을 썼는가?"],
-  },
-  shot: {
-    title: "핵심 컷 평가 기준",
-    summary: "핵심 컷은 가장 예쁜 이미지가 아니라 광고 목적을 가장 잘 수행하는 장면입니다.",
-    concepts: ["시선 집중도는 첫 화면에서 멈춰 보게 만드는 힘이다.", "브랜드 톤 적합도는 색, 표정, 배경, 조명이 메시지와 맞는지 보는 기준이다.", "세로형 적합도는 모바일 화면에서 제품과 자막이 잘 살아나는지 확인한다."],
-    badExample: "색감이 예뻐서 A안을 고른다.",
-    goodExample: "A안은 첫 3초 훅이 강하고 타깃 상황이 바로 보이므로 대표 컷으로 선택한다.",
-    checklist: ["타깃이 장면을 보고 자기 상황으로 느끼는가?", "브랜드 톤이 흔들리지 않는가?", "모바일 세로 화면에서 핵심 대상이 잘 보이는가?"],
-  },
-  edit: {
-    title: "숏폼 편집 체크 포인트",
-    summary: "편집에서는 효과보다 리듬, 자막 가독성, CTA의 명확성이 우선입니다.",
-    concepts: ["첫 3초 안에 문제나 혜택이 보여야 이탈을 줄일 수 있다.", "전환 효과가 많으면 메시지보다 효과가 먼저 보인다.", "자막은 모바일 밝기와 작은 화면에서도 읽혀야 한다."],
-    badExample: "전환 효과를 많이 넣어 역동적으로 만든다.",
-    goodExample: "첫 장면은 짧게, 제품 설명은 2-3컷으로 압축하고 마지막 2초에 CTA를 고정한다.",
-    checklist: ["첫 3초가 충분히 강한가?", "자막이 배경과 겹치지 않는가?", "마지막 행동유도가 분명한가?"],
-  },
-  portfolio: {
-    title: "포트폴리오 설명문의 역할",
-    summary: "취업용 포트폴리오는 결과물만이 아니라 문제 정의, 판단 기준, AI 활용 과정을 함께 보여줘야 합니다.",
-    concepts: ["기획 의도는 타깃과 광고 목적에서 출발해야 한다.", "AI 활용 방식은 어떤 도구를 왜 썼는지 설명한다.", "피드백과 수정 이유를 쓰면 결과물의 완성도가 더 설득력 있게 보인다."],
-    badExample: "AI로 숏폼 광고를 만들었습니다.",
-    goodExample: "타깃을 취업 포트폴리오 준비생으로 설정하고, Pomelli로 메시지 후보를 정리한 뒤 Flow와 CapCut으로 세로형 광고를 완성했습니다.",
-    checklist: ["내 역할이 분명히 보이는가?", "AI 도구 사용 이유가 설명됐는가?", "수정 과정이나 배운 점이 들어갔는가?"],
-  },
-};
-
-const defaultScenes = [
+const aiReadyChecklist = [
   {
-    role: "훅",
-    duration: 3,
-    description: "타깃이 겪는 불편함을 빠르게 보여준다.",
-    caption: "아직도 매번 처음부터 만들고 있나요?",
-    narration: "반복되는 작업, 이제 줄여보세요.",
+    id: "goal",
+    title: "업무 목표가 명확하다.",
+    examples: ["회의록 작성", "보고서 초안 작성", "고객문의 답변", "생산현황 요약"],
+    note: "AI는 업무 목표가 명확할수록 더 좋은 결과를 만듭니다.",
   },
   {
-    role: "문제 제시",
-    duration: 5,
-    description: "문제가 커지는 상황을 모바일 화면에 맞게 보여준다.",
-    caption: "시간은 부족하고 결과물은 아쉽다면",
-    narration: "짧은 시간 안에 설득력 있는 결과물이 필요합니다.",
+    id: "repeat",
+    title: "반복적으로 수행하는 업무이다.",
+    note: "한 번만 하는 업무보다 반복되는 업무일수록 AI 활용 효과가 높습니다.",
   },
   {
-    role: "제품 등장",
-    duration: 6,
-    description: "제품 또는 서비스가 문제 해결 방식으로 등장한다.",
-    caption: "핵심만 빠르게 정리",
-    narration: "이 도구는 아이디어를 광고 구조로 바꿔줍니다.",
+    id: "materials",
+    title: "AI가 참고할 기준자료가 준비되어 있다.",
+    examples: ["업무 매뉴얼", "보고서 샘플", "회의록", "규정", "FAQ", "품질 기준서"],
+    note: "AI는 기준자료를 바탕으로 안정적인 결과를 만듭니다.",
   },
   {
-    role: "베네핏 증명",
-    duration: 6,
-    description: "사용 전후 차이를 비교하거나 결과물을 보여준다.",
-    caption: "기획부터 프롬프트까지 한 번에",
-    narration: "장면별 프롬프트와 포트폴리오 설명까지 이어집니다.",
+    id: "format",
+    title: "원하는 결과물의 형식이 정해져 있다.",
+    examples: ["요약", "현황", "문제점", "원인", "개선안", "실행계획"],
+    note: "출력 형식이 명확할수록 결과 품질이 일정해집니다.",
   },
   {
-    role: "CTA",
-    duration: 4,
-    description: "행동을 유도하는 문장과 브랜드를 명확히 보여준다.",
-    caption: "지금 바로 시작해보세요",
-    narration: "오늘 만든 광고를 포트폴리오로 완성하세요.",
+    id: "review",
+    title: "AI 결과를 사람이 검토하고 승인할 수 있다.",
+    note: "AI 결과는 초안입니다. 최종 판단과 책임은 사람이 수행합니다.",
+  },
+  {
+    id: "security",
+    title: "보안상 AI 활용이 가능한 업무이다.",
+    note: "외부 AI에 입력 가능한 자료인지 확인합니다. 개인정보, 기밀정보, 민감정보는 회사 정책을 확인해야 합니다.",
   },
 ];
 
-const initialProject = {
-  product: "AI 광고 제작 워크숍",
-  brand: "Shortform Lab",
-  target: "취업 포트폴리오를 준비하는 대학생",
-  objective: "인지도 상승",
-  tone: "전문적",
-  concept: "AI 도구를 활용해 기획부터 숏폼 광고 제작까지 빠르게 경험하게 하는 실습형 교육",
-  selectedHook: hookBank[0],
-  benefit: benefitBank[2],
-  cta: ctaBank[0],
-  copyOptions: [
-    "15초 안에 광고 기획부터 프롬프트까지 완성하세요.",
-    "AI로 만든 첫 번째 숏폼 광고, 포트폴리오가 됩니다.",
-    "아이디어를 장면으로, 장면을 결과물로 바꿔보세요.",
-  ],
-  scenes: defaultScenes,
-  promptBase: {
-    model: "20대 대학생 크리에이터",
-    background: "밝은 강의실과 노트북 작업 장면",
-    lighting: "soft natural daylight",
-    mood: "밝고 깨끗한",
-    camera: "미디엄 샷",
+const benchmarkPrinciples = [
+  { title: "업무 단위", text: "AI 도입은 도구가 아니라 반복 업무 하나를 고르는 것에서 시작합니다." },
+  { title: "조직 자료", text: "기본 추천 자료에 우리 조직의 최신 자료를 추가해야 결과가 안정됩니다." },
+  { title: "역할형 AI", text: "일반 챗봇이 아니라 특정 업무를 맡는 보조자로 역할을 고정합니다." },
+  { title: "표준 출력", text: "결과물 형식을 맞춰야 팀원이 같은 기준으로 검토할 수 있습니다." },
+  { title: "사람 검토", text: "AI 결과물은 초안이며 사실, 수치, 보안, 실행 가능성을 확인해야 합니다." },
+];
+
+const reviewChecklist = ["사실이 맞는가?", "수치와 날짜가 맞는가?", "사내 기준과 충돌하지 않는가?", "민감정보가 포함되어 있지 않은가?", "담당자와 기한이 명확한가?", "실행 가능한 내용인가?"];
+
+const guideReasons = [
+  {
+    title: "AI를 모든 업무에 쓰려고 하면 실패하기 쉽습니다.",
+    text: "먼저 반복되고, 자료가 있고, 사람이 최종 검토할 수 있는 업무 하나를 골라야 합니다.",
   },
-  shotScores: [
-    { name: "A안", focus: "타깃 공감", brand: 4, attention: 5, vertical: 4, note: "첫 장면 훅이 강함" },
-    { name: "B안", focus: "제품 이해", brand: 5, attention: 3, vertical: 5, note: "브랜드 톤이 가장 안정적" },
-    { name: "C안", focus: "비주얼 임팩트", brand: 3, attention: 5, vertical: 4, note: "눈길은 가지만 설명 보완 필요" },
-  ],
-  editChecks: ["첫 3초 훅이 명확하다", "자막이 모바일 화면에서 잘 읽힌다", "CTA가 마지막에 보인다"],
-  portfolio: {
-    role: "기획, 프롬프트 작성, 영상 편집",
-    aiUse: "Pomelli로 콘셉트 후보를 정리하고 Flow로 핵심 장면을 생성한 뒤 CapCut에서 숏폼 리듬에 맞게 편집",
-    reflection: "타깃과 목적을 먼저 정하니 장면 선택과 자막 작성 기준이 명확해졌다.",
+  {
+    title: "좋은 답변은 좋은 기준 자료에서 나옵니다.",
+    text: "AI에게 많이 넣는 것보다, 우리 조직에서 승인된 최신 자료를 넣는 것이 더 중요합니다.",
   },
-  completed: ["topic"],
-};
+  {
+    title: "역할이 모호하면 결과도 흔들립니다.",
+    text: "AI를 일반 도우미가 아니라 회의록 정리자, 보고서 작성 보조자, 품질 이슈 분석자처럼 업무 역할로 고정합니다.",
+  },
+  {
+    title: "출력 형식이 표준화되어야 팀에서 쓸 수 있습니다.",
+    text: "요약, 현황, 문제점, 원인, 실행계획, 담당자, 기한처럼 결과물의 구조를 미리 정해야 검토가 빨라집니다.",
+  },
+];
+
+const trainerModes = [
+  {
+    title: "30분 체험형",
+    text: "업무 하나를 고르고, 전/후 프롬프트를 비교해 AI 결과가 왜 달라지는지 체감합니다.",
+  },
+  {
+    title: "90분 워크숍형",
+    text: "실제 업무자료를 넣고 출력 형식을 조정한 뒤, AI 결과를 사람이 검토하는 루프까지 진행합니다.",
+  },
+  {
+    title: "부서 적용형",
+    text: "팀 공통 업무를 선정하고 기준 자료와 출력 형식을 합의해 부서용 프롬프트 템플릿으로 축적합니다.",
+  },
+];
+
+const effectSignals = [
+  "막연한 요청과 구조화된 요청의 차이를 비교한다.",
+  "실제 업무자료를 넣어 결과 품질을 점검한다.",
+  "검토 메모를 남겨 다음 업무의 기준 자료로 재사용한다.",
+];
+
+const trainingRecordStorageKey = "ai-work-os-training-records";
+
+const weaveCapabilities = [
+  { icon: Sparkles, title: "바이브코딩 워크숍" },
+  { icon: Radar, title: "AI기반 문제해결 워크숍" },
+  { icon: Workflow, title: "업무자동화 & AI 에이전트 교육 및 컨설팅" },
+  { icon: Route, title: "창업교육 및 진로설계" },
+];
 
 function App() {
-  const [activeSession, setActiveSession] = useState("topic");
-  const [guideOpen, setGuideOpen] = useState(false);
-  const [project, setProject] = useState(() => {
-    try {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : initialProject;
-    } catch {
-      return initialProject;
-    }
-  });
-  const [copied, setCopied] = useState("");
+  const [page, setPage] = useState(() => (window.location.hash === "#guide" ? "guide" : "training"));
+  const [selectedId, setSelectedId] = useState("");
+  const [activeStep, setActiveStep] = useState(0);
+  const [aiReadyChecks, setAiReadyChecks] = useState([]);
+  const [customMaterialInput, setCustomMaterialInput] = useState("");
+  const [customOutputInput, setCustomOutputInput] = useState("");
+  const [customMaterialsByWork, setCustomMaterialsByWork] = useState({});
+  const [customOutputsByWork, setCustomOutputsByWork] = useState({});
+  const [removedDefaultMaterialsByWork, setRemovedDefaultMaterialsByWork] = useState({});
+  const [removedDefaultOutputsByWork, setRemovedDefaultOutputsByWork] = useState({});
+  const [outputOrderByWork, setOutputOrderByWork] = useState({});
+  const [roleByWork, setRoleByWork] = useState({});
+  const [practiceDataByWork, setPracticeDataByWork] = useState({});
+  const [aiDraftByWork, setAiDraftByWork] = useState({});
+  const [reviewMemoByWork, setReviewMemoByWork] = useState({});
+  const [trainingRecords, setTrainingRecords] = useState(() => loadTrainingRecords());
+  const [saveMessage, setSaveMessage] = useState("");
+  const [checkedReviews, setCheckedReviews] = useState([]);
+
+  const selectedScenario = useMemo(
+    () => scenarios.find((scenario) => scenario.id === selectedId),
+    [selectedId],
+  );
+
+  const customMaterials = selectedId ? customMaterialsByWork[selectedId] ?? [] : [];
+  const customOutputs = selectedId ? customOutputsByWork[selectedId] ?? [] : [];
+  const removedDefaultMaterials = selectedId ? removedDefaultMaterialsByWork[selectedId] ?? [] : [];
+  const removedDefaultOutputs = selectedId ? removedDefaultOutputsByWork[selectedId] ?? [] : [];
+  const defaultMaterials = selectedScenario
+    ? selectedScenario.sourceMaterials.filter((item) => !removedDefaultMaterials.includes(item))
+    : [];
+  const defaultOutputs = selectedScenario
+    ? selectedScenario.outputFormat.filter((item) => !removedDefaultOutputs.includes(item))
+    : [];
+  const sourceMaterials = selectedScenario ? [...defaultMaterials, ...customMaterials] : [];
+  const outputFormat = selectedScenario
+    ? reconcileOrder(outputOrderByWork[selectedId] ?? [], [...defaultOutputs, ...customOutputs])
+    : [];
+  const roleText = selectedScenario ? roleByWork[selectedId] ?? selectedScenario.role : "";
+  const practiceData = selectedId ? practiceDataByWork[selectedId] ?? "" : "";
+  const aiDraft = selectedId ? aiDraftByWork[selectedId] ?? "" : "";
+  const reviewMemo = selectedId ? reviewMemoByWork[selectedId] ?? "" : "";
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
-  }, [project]);
-
-  const currentSession = sessions.find((session) => session.id === activeSession);
-  const activeSessionIndex = sessions.findIndex((session) => session.id === activeSession);
-  const previousSession = sessions[activeSessionIndex - 1];
-  const nextSession = sessions[activeSessionIndex + 1];
-  const currentGuide = learningGuides[activeSession];
-  const completedCount = project.completed.length;
-  const progress = Math.round((completedCount / sessions.length) * 100);
-  const totalSeconds = project.scenes.reduce((sum, scene) => sum + Number(scene.duration || 0), 0);
-
-  const planningSentence = useMemo(() => {
-    return `${project.brand}는 ${project.target}에게 ${project.product}의 가치를 알리기 위해, ${project.tone} 톤으로 ${project.objective}을 목표로 하는 15-30초 숏폼 광고를 제작한다.`;
-  }, [project]);
-
-  const scriptPreview = useMemo(() => {
-    return [
-      `0-3초 훅: ${project.selectedHook}`,
-      `제품/서비스: ${project.product}`,
-      `핵심 베네핏: ${project.benefit}`,
-      `행동유도: ${project.cta}`,
-    ].join("\n");
-  }, [project]);
-
-  const scenePrompts = useMemo(() => {
-    return project.scenes.map((scene, index) => {
-      return [
-        `Scene ${index + 1}, ${scene.role}, vertical 9:16 short-form ad.`,
-        `Product or brand: ${project.product} by ${project.brand}.`,
-        `Main subject: ${project.promptBase.model}.`,
-        `Action: ${scene.description}`,
-        `Background: ${project.promptBase.background}.`,
-        `Mood: ${project.promptBase.mood}, lighting: ${project.promptBase.lighting}.`,
-        `Camera: ${project.promptBase.camera}.`,
-        "Commercial style, clear composition, no watermark, no distorted text.",
-      ].join(" ");
-    });
-  }, [project]);
-
-  const bestShot = useMemo(() => {
-    return [...project.shotScores].sort((a, b) => scoreShot(b) - scoreShot(a))[0];
-  }, [project.shotScores]);
-
-  const portfolioText = useMemo(() => {
-    return `${project.brand} 프로젝트는 ${project.target}을 대상으로 ${project.objective}을 목표로 제작한 숏폼 광고입니다. ${project.concept}라는 콘셉트를 바탕으로, "${project.selectedHook}"라는 훅과 "${project.benefit}"라는 핵심 베네핏을 중심에 두었습니다. 저는 ${project.portfolio.role}을 담당했으며, ${project.portfolio.aiUse}했습니다. 제작 과정에서 ${project.portfolio.reflection}`;
-  }, [project]);
-
-  function updateProject(key, value) {
-    setProject((current) => ({ ...current, [key]: value }));
-  }
-
-  function updatePromptBase(key, value) {
-    setProject((current) => ({ ...current, promptBase: { ...current.promptBase, [key]: value } }));
-  }
-
-  function updatePortfolio(key, value) {
-    setProject((current) => ({ ...current, portfolio: { ...current.portfolio, [key]: value } }));
-  }
-
-  function updateScene(index, key, value) {
-    setProject((current) => {
-      const scenes = current.scenes.map((scene, sceneIndex) => (
-        sceneIndex === index ? { ...scene, [key]: value } : scene
-      ));
-      return { ...current, scenes };
-    });
-  }
-
-  function updateCopyOption(index, value) {
-    setProject((current) => {
-      const copyOptions = current.copyOptions.map((option, optionIndex) => (
-        optionIndex === index ? value : option
-      ));
-      return { ...current, copyOptions };
-    });
-  }
-
-  function updateShot(index, key, value) {
-    setProject((current) => {
-      const shotScores = current.shotScores.map((shot, shotIndex) => (
-        shotIndex === index ? { ...shot, [key]: value } : shot
-      ));
-      return { ...current, shotScores };
-    });
-  }
-
-  function toggleComplete(id) {
-    setProject((current) => {
-      const completed = current.completed.includes(id)
-        ? current.completed.filter((item) => item !== id)
-        : [...current.completed, id];
-      return { ...current, completed };
-    });
-  }
-
-  function toggleEditCheck(check) {
-    setProject((current) => {
-      const editChecks = current.editChecks.includes(check)
-        ? current.editChecks.filter((item) => item !== check)
-        : [...current.editChecks, check];
-      return { ...current, editChecks };
-    });
-  }
-
-  async function copyText(label, value) {
-    await navigator.clipboard.writeText(value);
-    setCopied(label);
-    window.setTimeout(() => setCopied(""), 1300);
-  }
-
-  function resetProject() {
-    setProject(initialProject);
-    setActiveSession("topic");
-  }
-
-  function downloadSummary() {
-    const body = [
-      "# 숏폼 광고 제작 수업 산출물",
-      "",
-      `프로젝트: ${project.brand}`,
-      `제품/서비스: ${project.product}`,
-      `타깃: ${project.target}`,
-      `목표: ${project.objective}`,
-      `톤: ${project.tone}`,
-      "",
-      "## 광고 기획 문장",
-      planningSentence,
-      "",
-      "## 광고 구조",
-      scriptPreview,
-      "",
-      "## 스토리보드",
-      ...project.scenes.map((scene, index) => `${index + 1}. ${scene.role} / ${scene.duration}초 / ${scene.caption} / ${scene.description}`),
-      "",
-      "## 씬별 프롬프트",
-      ...scenePrompts.map((prompt, index) => `${index + 1}. ${prompt}`),
-      "",
-      "## 포트폴리오 설명문",
-      portfolioText,
-    ].join("\n");
-    const blob = new Blob([body], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${project.brand.replace(/\s+/g, "-")}-shortform-ad.md`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function renderActiveSession() {
-    if (activeSession === "topic") {
-      return (
-        <section className="panel session-panel">
-          <div className="panel-head large">
-            <Target size={22} />
-            <div>
-              <p className="eyebrow">0:00-1:00</p>
-              <h2>광고 주제 정하기</h2>
-            </div>
-          </div>
-          <div className="field-grid">
-            <label>
-              제품/서비스
-              <input value={project.product} onChange={(event) => updateProject("product", event.target.value)} />
-            </label>
-            <label>
-              브랜드/프로젝트명
-              <input value={project.brand} onChange={(event) => updateProject("brand", event.target.value)} />
-            </label>
-            <label className="wide">
-              타깃 고객
-              <input value={project.target} onChange={(event) => updateProject("target", event.target.value)} />
-            </label>
-            <label>
-              광고 목적
-              <select value={project.objective} onChange={(event) => updateProject("objective", event.target.value)}>
-                {objectives.map((item) => <option key={item}>{item}</option>)}
-              </select>
-            </label>
-            <label>
-              브랜드 톤
-              <select value={project.tone} onChange={(event) => updateProject("tone", event.target.value)}>
-                {tones.map((item) => <option key={item}>{item}</option>)}
-              </select>
-            </label>
-            <label className="wide">
-              콘셉트 설명
-              <textarea value={project.concept} onChange={(event) => updateProject("concept", event.target.value)} />
-            </label>
-          </div>
-          <ResultBox
-            title="광고 기획 문장"
-            value={planningSentence}
-            copied={copied === "plan"}
-            onCopy={() => copyText("plan", planningSentence)}
-          />
-        </section>
-      );
+    function syncPageWithHash() {
+      setPage(window.location.hash === "#guide" ? "guide" : "training");
     }
 
-    if (activeSession === "message") {
-      return (
-        <section className="panel session-panel">
-          <div className="panel-head large">
-            <Megaphone size={22} />
-            <div>
-              <p className="eyebrow">1:00-2:00</p>
-              <h2>콘셉트 및 메시지 만들기</h2>
-            </div>
-          </div>
-          <div className="selector-group">
-            <h3>훅 문장 선택</h3>
-            <div>
-              {hookBank.map((hook) => (
-                <button className={project.selectedHook === hook ? "chip active" : "chip"} key={hook} onClick={() => updateProject("selectedHook", hook)} type="button">
-                  {hook}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="field-grid compact">
-            <label>
-              핵심 베네핏
-              <select value={project.benefit} onChange={(event) => updateProject("benefit", event.target.value)}>
-                {benefitBank.map((item) => <option key={item}>{item}</option>)}
-              </select>
-            </label>
-            <label>
-              CTA
-              <select value={project.cta} onChange={(event) => updateProject("cta", event.target.value)}>
-                {ctaBank.map((item) => <option key={item}>{item}</option>)}
-              </select>
-            </label>
-          </div>
-          <div className="copy-options">
-            {project.copyOptions.map((copy, index) => (
-              <label key={index}>
-                핵심 카피 {index + 1}
-                <input value={copy} onChange={(event) => updateCopyOption(index, event.target.value)} />
-              </label>
-            ))}
-          </div>
-          <ResultBox
-            title="훅-제품-행동유도 구조"
-            value={scriptPreview}
-            copied={copied === "script"}
-            onCopy={() => copyText("script", scriptPreview)}
-          />
-        </section>
-      );
+    window.addEventListener("hashchange", syncPageWithHash);
+    return () => window.removeEventListener("hashchange", syncPageWithHash);
+  }, []);
+
+  const promptTemplate = useMemo(() => {
+    if (!selectedScenario) {
+      return "먼저 업무를 선택하면 훈련용 요청문이 단계별로 조립됩니다.";
     }
 
-    if (activeSession === "storyboard") {
-      return (
-        <section className="panel session-panel wide-session">
-          <div className="panel-head large">
-            <Film size={22} />
-            <div>
-              <p className="eyebrow">2:00-3:00</p>
-              <h2>스토리보드 설계</h2>
-            </div>
-          </div>
-          <div className="storyboard-grid">
-            {project.scenes.map((scene, index) => (
-              <article className="scene-card" key={index}>
-                <div className="scene-top">
-                  <span>{index + 1}</span>
-                  <select value={scene.role} onChange={(event) => updateScene(index, "role", event.target.value)}>
-                    {sceneRoles.map((role) => <option key={role}>{role}</option>)}
-                  </select>
-                </div>
-                <label>
-                  길이(초)
-                  <input min="1" type="number" value={scene.duration} onChange={(event) => updateScene(index, "duration", event.target.value)} />
-                </label>
-                <label>
-                  장면 설명
-                  <textarea value={scene.description} onChange={(event) => updateScene(index, "description", event.target.value)} />
-                </label>
-                <label>
-                  화면 자막
-                  <input value={scene.caption} onChange={(event) => updateScene(index, "caption", event.target.value)} />
-                </label>
-                <label>
-                  내레이션
-                  <input value={scene.narration} onChange={(event) => updateScene(index, "narration", event.target.value)} />
-                </label>
-              </article>
-            ))}
-          </div>
-        </section>
-      );
+    const sections = [`업무: ${selectedScenario.work}`];
+
+    if (activeStep >= 2) {
+      sections.push(`기준 자료:
+${sourceMaterials.map((item) => `- ${item}`).join("\n")}`);
+    } else {
+      sections.push("기준 자료: 다음 단계에서 구성");
     }
 
-    if (activeSession === "prompt") {
-      return (
-        <section className="panel session-panel wide-session">
-          <div className="panel-head large">
-            <Wand2 size={22} />
-            <div>
-              <p className="eyebrow">3:00-4:00</p>
-              <h2>AI 생성용 프롬프트 만들기</h2>
-            </div>
-          </div>
-          <div className="field-grid compact">
-            <label>
-              모델/인물
-              <input value={project.promptBase.model} onChange={(event) => updatePromptBase("model", event.target.value)} />
-            </label>
-            <label>
-              배경
-              <input value={project.promptBase.background} onChange={(event) => updatePromptBase("background", event.target.value)} />
-            </label>
-            <label>
-              무드
-              <select value={project.promptBase.mood} onChange={(event) => updatePromptBase("mood", event.target.value)}>
-                {visualMoods.map((item) => <option key={item}>{item}</option>)}
-              </select>
-            </label>
-            <label>
-              카메라 구도
-              <select value={project.promptBase.camera} onChange={(event) => updatePromptBase("camera", event.target.value)}>
-                {cameraAngles.map((item) => <option key={item}>{item}</option>)}
-              </select>
-            </label>
-            <label className="wide">
-              조명
-              <input value={project.promptBase.lighting} onChange={(event) => updatePromptBase("lighting", event.target.value)} />
-            </label>
-          </div>
-          <div className="prompt-list">
-            {scenePrompts.map((prompt, index) => (
-              <ResultBox
-                key={index}
-                title={`씬 ${index + 1} 프롬프트`}
-                value={prompt}
-                copied={copied === `prompt-${index}`}
-                onCopy={() => copyText(`prompt-${index}`, prompt)}
-              />
-            ))}
-          </div>
-        </section>
-      );
+    if (activeStep >= 3) {
+      sections.unshift(roleText);
+    } else {
+      sections.push("AI 역할: 다음 단계에서 설정");
     }
 
-    if (activeSession === "shot") {
-      return (
-        <section className="panel session-panel">
-          <div className="panel-head large">
-            <Sparkles size={22} />
-            <div>
-              <p className="eyebrow">4:00-5:00</p>
-              <h2>핵심 컷 생성 및 평가</h2>
-            </div>
-          </div>
-          <div className="shot-grid">
-            {project.shotScores.map((shot, index) => (
-              <article className="shot-card" key={shot.name}>
-                <div>
-                  <strong>{shot.name}</strong>
-                  <span>{scoreShot(shot)}점</span>
-                </div>
-                <label>
-                  중점
-                  <input value={shot.focus} onChange={(event) => updateShot(index, "focus", event.target.value)} />
-                </label>
-                <ScoreInput label="브랜드 톤" value={shot.brand} onChange={(value) => updateShot(index, "brand", value)} />
-                <ScoreInput label="시선 집중" value={shot.attention} onChange={(value) => updateShot(index, "attention", value)} />
-                <ScoreInput label="세로형 적합" value={shot.vertical} onChange={(value) => updateShot(index, "vertical", value)} />
-                <label>
-                  메모
-                  <input value={shot.note} onChange={(event) => updateShot(index, "note", event.target.value)} />
-                </label>
-              </article>
-            ))}
-          </div>
-          <div className="guide-box">
-            <strong>추천 핵심 컷</strong>
-            <p>{bestShot.name} · {bestShot.focus} · {bestShot.note}</p>
-          </div>
-        </section>
-      );
+    if (activeStep >= 4) {
+      sections.push(`출력 형식:
+${outputFormat.map((item, index) => `${index + 1}. ${item}`).join("\n")}`);
+    } else {
+      sections.push("출력 형식: 다음 단계에서 표준화");
     }
 
-    if (activeSession === "edit") {
-      return (
-        <section className="panel session-panel split-session">
-          <div>
-            <div className="panel-head large">
-              <Clipboard size={22} />
-              <div>
-                <p className="eyebrow">5:00-6:00</p>
-                <h2>숏폼 영상 편집</h2>
-              </div>
-            </div>
-            <div className="checklist">
-              {editChecks.map((check) => (
-                <button className={project.editChecks.includes(check) ? "checked" : ""} key={check} onClick={() => toggleEditCheck(check)} type="button">
-                  <Check size={17} />
-                  {check}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="phone-preview" aria-label="숏폼 광고 흐름 미리보기">
-            <div>
-              <span>{project.brand}</span>
-              <strong>{project.selectedHook}</strong>
-              <p>{project.copyOptions[0]}</p>
-              <em>{project.cta}</em>
-            </div>
-          </div>
-        </section>
-      );
+    if (activeStep >= 5) {
+      sections.push(`검토 기준:
+${reviewChecklist.map((item) => `- ${item}`).join("\n")}`);
+    } else {
+      sections.push("검토 기준: 마지막 단계에서 확인");
     }
 
-    return (
-      <section className="panel session-panel">
-        <div className="panel-head large">
-          <FileText size={22} />
-          <div>
-            <p className="eyebrow">6:00-7:00</p>
-            <h2>포트폴리오 정리 및 피드백</h2>
-          </div>
-        </div>
-        <div className="field-grid compact">
-          <label>
-            담당 역할
-            <input value={project.portfolio.role} onChange={(event) => updatePortfolio("role", event.target.value)} />
-          </label>
-          <label className="wide">
-            AI 활용 방식
-            <textarea value={project.portfolio.aiUse} onChange={(event) => updatePortfolio("aiUse", event.target.value)} />
-          </label>
-          <label className="wide">
-            배운 점/수정 이유
-            <textarea value={project.portfolio.reflection} onChange={(event) => updatePortfolio("reflection", event.target.value)} />
-          </label>
-        </div>
-        <ResultBox
-          title="취업 포트폴리오 설명문"
-          value={portfolioText}
-          copied={copied === "portfolio"}
-          onCopy={() => copyText("portfolio", portfolioText)}
-        />
-        <div className="save-actions">
-          <button onClick={downloadSummary} type="button">
-            <Save size={18} />
-            전체 산출물 다운로드
-          </button>
-        </div>
-      </section>
+    sections.push(`작성 원칙:
+- 기준 자료에 없는 내용은 임의로 확정하지 않는다.
+- 사람이 최종 검토할 수 있도록 초안 형태로 작성한다.
+- 불확실한 내용은 확인 필요사항으로 분리한다.`);
+
+    return sections.join("\n\n");
+  }, [activeStep, outputFormat, roleText, selectedScenario, sourceMaterials]);
+
+  const beforePrompt = useMemo(() => {
+    if (!selectedScenario) return "업무를 선택하면 훈련 전 요청 예시가 표시됩니다.";
+
+    return `${selectedScenario.work} 해줘.
+
+자료:
+${practiceData || "[실제 업무자료를 붙여 넣으세요]"}`;
+  }, [practiceData, selectedScenario]);
+
+  const practicePrompt = useMemo(() => {
+    if (!selectedScenario) return "업무를 선택하면 실제 자료용 훈련 프롬프트가 표시됩니다.";
+
+    return `${roleText}
+
+업무: ${selectedScenario.work}
+
+실제 업무자료:
+${practiceData || "[실제 업무자료를 붙여 넣으세요]"}
+
+기준 자료:
+${sourceMaterials.map((item) => `- ${item}`).join("\n")}
+
+출력 형식:
+${outputFormat.map((item, index) => `${index + 1}. ${item}`).join("\n")}
+
+검토 기준:
+${reviewChecklist.map((item) => `- ${item}`).join("\n")}
+
+작성 원칙:
+- 기준 자료와 실제 업무자료에 없는 내용은 임의로 확정하지 않는다.
+- 사람이 최종 검토할 수 있도록 초안 형태로 작성한다.
+- 불확실한 내용은 확인 필요사항으로 분리한다.`;
+  }, [outputFormat, practiceData, roleText, selectedScenario, sourceMaterials]);
+
+  function chooseWork(id) {
+    setSelectedId(id);
+    setActiveStep(2);
+    setCustomMaterialInput("");
+    setCustomOutputInput("");
+    setCheckedReviews([]);
+  }
+
+  function reset() {
+    setSelectedId("");
+    setActiveStep(0);
+    setAiReadyChecks([]);
+    setCustomMaterialInput("");
+    setCustomOutputInput("");
+    setCheckedReviews([]);
+    goToTraining();
+  }
+
+  function goToGuide() {
+    window.location.hash = "guide";
+    setPage("guide");
+  }
+
+  function goToTraining() {
+    if (window.location.hash) {
+      window.history.pushState("", document.title, window.location.pathname + window.location.search);
+    }
+    setPage("training");
+  }
+
+  function addCustomMaterial() {
+    const material = customMaterialInput.trim();
+    if (!selectedId || !material) return;
+    if (sourceMaterials.includes(material)) {
+      setCustomMaterialInput("");
+      return;
+    }
+
+    setCustomMaterialsByWork((current) => appendUnique(current, selectedId, material));
+    setCustomMaterialInput("");
+  }
+
+  function removeCustomMaterial(material) {
+    setCustomMaterialsByWork((current) => removeItem(current, selectedId, material));
+  }
+
+  function removeSourceMaterial(material) {
+    if (!selectedScenario || !selectedId) return;
+
+    if (customMaterials.includes(material)) {
+      removeCustomMaterial(material);
+      return;
+    }
+
+    setRemovedDefaultMaterialsByWork((current) => appendUnique(current, selectedId, material));
+  }
+
+  function restoreDefaultMaterials() {
+    if (!selectedId) return;
+    setRemovedDefaultMaterialsByWork((current) => ({ ...current, [selectedId]: [] }));
+  }
+
+  function addCustomOutput() {
+    const output = customOutputInput.trim();
+    if (!selectedId || !output) return;
+    if (outputFormat.includes(output)) {
+      setCustomOutputInput("");
+      return;
+    }
+    if (removedDefaultOutputs.includes(output)) {
+      setRemovedDefaultOutputsByWork((current) => removeItem(current, selectedId, output));
+      setOutputOrderByWork((current) => ({
+        ...current,
+        [selectedId]: [...(current[selectedId] ?? outputFormat), output],
+      }));
+      setCustomOutputInput("");
+      return;
+    }
+
+    setCustomOutputsByWork((current) => appendUnique(current, selectedId, output));
+    setCustomOutputInput("");
+  }
+
+  function removeOutput(output) {
+    if (!selectedScenario || !selectedId) return;
+
+    if (customOutputs.includes(output)) {
+      setCustomOutputsByWork((current) => removeItem(current, selectedId, output));
+    } else {
+      setRemovedDefaultOutputsByWork((current) => appendUnique(current, selectedId, output));
+    }
+
+    setOutputOrderByWork((current) => ({
+      ...current,
+      [selectedId]: (current[selectedId] ?? outputFormat).filter((item) => item !== output),
+    }));
+  }
+
+  function restoreDefaultOutputs() {
+    if (!selectedId || !selectedScenario) return;
+    setRemovedDefaultOutputsByWork((current) => ({ ...current, [selectedId]: [] }));
+    setOutputOrderByWork((current) => ({
+      ...current,
+      [selectedId]: [...selectedScenario.outputFormat, ...customOutputs],
+    }));
+  }
+
+  function moveOutput(output, direction) {
+    if (!selectedId) return;
+
+    setOutputOrderByWork((current) => {
+      const currentOrder = reconcileOrder(current[selectedId] ?? outputFormat, outputFormat);
+      return {
+        ...current,
+        [selectedId]: moveItem(currentOrder, output, direction),
+      };
+    });
+  }
+
+  function updateRole(value) {
+    if (!selectedId) return;
+    setRoleByWork((current) => ({ ...current, [selectedId]: value }));
+  }
+
+  function updatePracticeData(value) {
+    if (!selectedId) return;
+    setPracticeDataByWork((current) => ({ ...current, [selectedId]: value }));
+  }
+
+  function updateAiDraft(value) {
+    if (!selectedId) return;
+    setAiDraftByWork((current) => ({ ...current, [selectedId]: value }));
+  }
+
+  function updateReviewMemo(value) {
+    if (!selectedId) return;
+    setReviewMemoByWork((current) => ({ ...current, [selectedId]: value }));
+  }
+
+  function saveTrainingRecord() {
+    if (!selectedScenario) return;
+
+    const now = new Date();
+    const record = {
+      id: `${selectedScenario.id}-${now.getTime()}`,
+      savedAt: now.toISOString(),
+      work: selectedScenario.work,
+      role: roleText,
+      sourceMaterials,
+      outputFormat,
+      practiceData,
+      practicePrompt,
+      aiDraft,
+      reviewMemo,
+      checkedReviews,
+    };
+
+    const nextRecords = [record, ...trainingRecords].slice(0, 12);
+    setTrainingRecords(nextRecords);
+    window.localStorage.setItem(trainingRecordStorageKey, JSON.stringify(nextRecords));
+    downloadMarkdownRecord(record);
+    setSaveMessage("훈련 기록을 저장하고 Markdown 파일로 내려받았습니다.");
+    window.setTimeout(() => setSaveMessage(""), 3200);
+  }
+
+  function toggleReview(item) {
+    setCheckedReviews((current) =>
+      current.includes(item) ? current.filter((entry) => entry !== item) : [...current, item],
     );
+  }
+
+  function toggleAiReadyCheck(itemId) {
+    setAiReadyChecks((current) =>
+      current.includes(itemId) ? current.filter((entry) => entry !== itemId) : [...current, itemId],
+    );
+  }
+
+  async function copyPrompt() {
+    await navigator.clipboard.writeText(promptTemplate);
+  }
+
+  async function copyPracticePrompt() {
+    await navigator.clipboard.writeText(practicePrompt);
+  }
+
+  if (page === "guide") {
+    return <GuidePage onBack={goToTraining} />;
   }
 
   return (
     <main className="app-shell">
-      <section className="hero">
-        <div className="hero-copy">
-          <p className="eyebrow">7시간 수업용 웹 시뮬레이터</p>
-          <h1>숏폼 광고 제작을 한 시간씩 따라가는 실습 보드</h1>
-          <p>한 시간에 하나의 작업만 열어 학생들이 지금 해야 할 산출물에 집중하도록 구성했습니다.</p>
-          <div className="hero-actions">
-            <button onClick={() => setActiveSession("topic")} type="button">
-              <Play size={18} />
-              0교시부터 시작
-            </button>
-            <button onClick={downloadSummary} type="button">
-              <Download size={18} />
-              산출물 저장
-            </button>
-          </div>
+      <header className="hero">
+        <div className="hero-content">
+          <h1 className="sr-only">AI Learning OS for Knowledge Workers</h1>
+          <p className="eyebrow">AI Learning OS for Knowledge Workers</p>
         </div>
-        <div className="class-status" aria-label="수업 진행 상태">
-          <strong>{progress}%</strong>
-          <span>완료한 세션 {completedCount} / {sessions.length}</span>
-          <div className="progress-track">
-            <i style={{ width: `${progress}%` }} />
-          </div>
-          <p>현재 장면 길이 합계 {totalSeconds}초</p>
-        </div>
-      </section>
-
-      <section className="timeline" aria-label="7시간 수업 타임라인">
-        {sessions.map((session) => (
-          <button
-            className={activeSession === session.id ? "timeline-item active" : "timeline-item"}
-            key={session.id}
-            onClick={() => setActiveSession(session.id)}
-            type="button"
-          >
-            <span>{session.time}</span>
-            <strong>{session.title}</strong>
-            {project.completed.includes(session.id) && <Check size={17} />}
+        <div className="hero-actions">
+          <a className="ghost-button" href="/llms-full.txt">
+            <FileText size={18} />
+            AI용 문서
+          </a>
+          <button className="ghost-button" onClick={goToGuide}>
+            <Map size={18} />
+            가이드 문서
           </button>
-        ))}
-      </section>
-
-      <section className="session-brief">
-        <div>
-          <p className="eyebrow">{currentSession.time} · {currentSession.tool}</p>
-          <h2>{currentSession.title}</h2>
-          <p>{currentSession.goal}</p>
+          <button className="reset-button" onClick={reset}>
+            <RefreshCw size={18} />
+            처음부터
+          </button>
         </div>
-        <button className="complete-button" onClick={() => toggleComplete(currentSession.id)} type="button">
-          <Check size={18} />
-          {project.completed.includes(currentSession.id) ? "완료됨" : "이 시간 완료"}
-        </button>
-      </section>
+      </header>
+
+      <nav className="stepper" aria-label="진행 단계">
+        {steps.map((step, index) => (
+          <React.Fragment key={step.id}>
+            <button
+              className={activeStep === step.id ? "is-current" : activeStep > step.id ? "is-done" : ""}
+              disabled={!selectedScenario && step.id > 1}
+              onClick={() => setActiveStep(step.id)}
+            >
+              <span>{step.id}</span>
+              {step.label}
+            </button>
+            {index < steps.length - 1 && <ArrowRight size={18} />}
+          </React.Fragment>
+        ))}
+      </nav>
 
       <section className="workspace">
-        <aside className="panel guide-panel">
-          <div className="panel-head">
-            <MonitorPlay size={20} />
-            <h2>시간별 이동</h2>
+        <section className="main-panel">
+          {activeStep === 1 && (
+            <StepCard
+              icon={ClipboardList}
+              title="1. 업무 선정"
+              text="반복되고, 자료가 있고, 사람이 최종 검토하면 되는 업무부터 고릅니다."
+            >
+              <div className="work-list">
+                {scenarios.map((scenario) => (
+                  <button
+                    className={selectedId === scenario.id ? "is-selected" : ""}
+                    key={scenario.id}
+                    onClick={() => chooseWork(scenario.id)}
+                  >
+                    <FileText size={18} />
+                    <span>
+                      <b>{scenario.work}</b>
+                      <small>{scenario.why}</small>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </StepCard>
+          )}
+
+          {activeStep === 0 && (
+            <StepCard
+              icon={CheckCircle2}
+              title="STEP 0. AI Ready Check"
+              text="프롬프트를 만들기 전에, 이 업무가 AI에게 맡길 준비가 되었는지 먼저 확인합니다."
+            >
+              <AiReadyCheck
+                checkedItems={aiReadyChecks}
+                onNext={() => setActiveStep(1)}
+                onToggle={toggleAiReadyCheck}
+              />
+            </StepCard>
+          )}
+
+          {activeStep === 2 && selectedScenario && (
+            <StepCard
+              icon={BookOpenCheck}
+              title="2. 기준 자료 구성"
+              text="추천 자료를 확인하고, 우리 조직에서 실제로 쓰는 최신 자료를 추가합니다."
+            >
+              <SuggestionList
+                customItems={customMaterials}
+                items={sourceMaterials}
+                onRemoveItem={removeSourceMaterial}
+                removableItems={sourceMaterials}
+              />
+              {removedDefaultMaterials.length > 0 && (
+                <button className="restore-button" onClick={restoreDefaultMaterials}>
+                  기본 자료 복원
+                </button>
+              )}
+              <Adder
+                buttonLabel="자료 추가"
+                label="우리 조직 자료 추가"
+                onAdd={addCustomMaterial}
+                onChange={setCustomMaterialInput}
+                placeholder="예: 2026년 2분기 품질 개선 회의록"
+                value={customMaterialInput}
+              />
+              <TrainingNote text={selectedScenario.practice} />
+              <NextButton onClick={() => setActiveStep(3)}>이 자료 기준으로 역할 설정</NextButton>
+            </StepCard>
+          )}
+
+          {activeStep === 3 && selectedScenario && (
+            <StepCard
+              icon={UserRoundCog}
+              title="3. AI 역할 설정"
+              text="일반 도우미가 아니라, 선택한 업무를 맡는 전담 보조자로 역할을 고정합니다."
+            >
+              <label className="role-editor">
+                <span>역할 문장</span>
+                <textarea value={roleText} onChange={(event) => updateRole(event.target.value)} />
+              </label>
+              <NextButton onClick={() => setActiveStep(4)}>이 역할로 출력 형식 정하기</NextButton>
+            </StepCard>
+          )}
+
+          {activeStep === 4 && selectedScenario && (
+            <StepCard
+              icon={Layers3}
+              title="4. 출력 형식 표준화"
+              text="결과물이 바로 검토될 수 있도록 항목과 순서를 고정합니다."
+            >
+              <SuggestionList
+                customItems={customOutputs}
+                items={outputFormat}
+                movable
+                onMoveItem={moveOutput}
+                onRemoveItem={removeOutput}
+                removableItems={outputFormat}
+                ordered
+              />
+              {removedDefaultOutputs.length > 0 && (
+                <button className="restore-button" onClick={restoreDefaultOutputs}>
+                  기본 출력 항목 복원
+                </button>
+              )}
+              <Adder
+                buttonLabel="항목 추가"
+                label="우리 팀 출력 항목 추가"
+                onAdd={addCustomOutput}
+                onChange={setCustomOutputInput}
+                placeholder="예: 승인권자 코멘트"
+                value={customOutputInput}
+              />
+              <NextButton onClick={() => setActiveStep(5)}>검토 루프 확인</NextButton>
+            </StepCard>
+          )}
+
+          {activeStep === 5 && selectedScenario && (
+            <StepCard
+              icon={ShieldCheck}
+              title="5. 사람 검토 루프"
+              text="실제 자료를 넣고, AI 답변을 붙여넣은 뒤, 사람이 검토한 기록까지 남깁니다."
+            >
+              <div className="completion-note">
+                <CheckCircle2 size={20} />
+                <p>{selectedScenario.work} 실습 프롬프트가 준비되었습니다. 아래 워크시트를 순서대로 진행해보세요.</p>
+              </div>
+              <PracticeLab
+                aiDraft={aiDraft}
+                beforePrompt={beforePrompt}
+                checkedReviews={checkedReviews}
+                onChangeAiDraft={updateAiDraft}
+                onChangePracticeData={updatePracticeData}
+                onChangeReviewMemo={updateReviewMemo}
+                onCopyPracticePrompt={copyPracticePrompt}
+                onSaveTrainingRecord={saveTrainingRecord}
+                onToggleReview={toggleReview}
+                practiceData={practiceData}
+                practicePrompt={practicePrompt}
+                recentRecords={trainingRecords}
+                reviewMemo={reviewMemo}
+                saveMessage={saveMessage}
+                scenario={selectedScenario}
+              />
+            </StepCard>
+          )}
+        </section>
+
+        <aside className="side-panel">
+          <div className="selected-work">
+            <span>현재 훈련 업무</span>
+            <strong>{selectedScenario?.work ?? "아직 선택 전"}</strong>
           </div>
-          <div className="mini-list">
-            {sessions.map((session, index) => (
-              <button className={activeSession === session.id ? "active" : ""} key={session.id} onClick={() => setActiveSession(session.id)} type="button">
-                <span>{session.time}</span>
-                <strong>{index + 1}. {session.title}</strong>
-                {project.completed.includes(session.id) ? <Check size={16} /> : <ChevronRight size={16} />}
+
+          <div className="principle-card">
+            <h2>벤치마킹 원칙</h2>
+            <div>
+              {benchmarkPrinciples.map((principle) => (
+                <article key={principle.title}>
+                  <span>{principle.title}</span>
+                  <p>{principle.text}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="principle-card">
+            <h2>훈련 효과 확인</h2>
+            <div>
+              {effectSignals.map((signal) => (
+                <article key={signal}>
+                  <span>체크포인트</span>
+                  <p>{signal}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="prompt-card">
+            <div className="prompt-head">
+              <h2>{activeStep >= 5 ? "실습 프롬프트" : "프롬프트 조립 중"}</h2>
+              <button onClick={copyPrompt}>
+                <Copy size={16} />
+                복사
               </button>
-            ))}
+            </div>
+            <pre>{promptTemplate}</pre>
           </div>
-          <button className="reset-button" onClick={resetProject} type="button">
-            <RefreshCw size={17} />
-            예시 데이터로 초기화
-          </button>
-        </aside>
-
-        <div className="stage-column">
-          {renderActiveSession()}
-          <div className="step-actions">
-            <button disabled={!previousSession} onClick={() => previousSession && setActiveSession(previousSession.id)} type="button">
-              이전 시간
-            </button>
-            <button disabled={!nextSession} onClick={() => nextSession && setActiveSession(nextSession.id)} type="button">
-              다음 시간
-              <ChevronRight size={17} />
-            </button>
-          </div>
-        </div>
-
-        <aside className="panel summary-panel">
-          <div className="panel-head">
-            <Clipboard size={20} />
-            <h2>현재 산출물</h2>
-          </div>
-          <div className="guide-box">
-            <strong>이번 시간 제출물</strong>
-            <p>{currentSession.output}</p>
-          </div>
-          <div className="guide-box dark">
-            <strong>강사용 진행 포인트</strong>
-            <p>{currentSession.teacherCue}</p>
-          </div>
-          <div className="summary-list">
-            <article>
-              <span>프로젝트</span>
-              <strong>{project.brand}</strong>
-              <p>{project.product}</p>
-            </article>
-            <article>
-              <span>타깃</span>
-              <p>{project.target}</p>
-            </article>
-            <article>
-              <span>장면 길이</span>
-              <strong>{totalSeconds}초</strong>
-            </article>
-          </div>
-          <button className="download-button" onClick={downloadSummary} type="button">
-            <Download size={17} />
-            산출물 다운로드
-          </button>
         </aside>
       </section>
 
-      <section className="learning-guide-wrap" aria-label="시간별 개념 가이드">
-        <div className="learning-guide">
-          <button className="guide-toggle" aria-expanded={guideOpen} onClick={() => setGuideOpen((open) => !open)} type="button">
-            <div>
-              <p className="eyebrow">{currentSession.time} 개념 가이드</p>
-              <h2>{currentGuide.title}</h2>
-              <p>{currentGuide.summary}</p>
-            </div>
-            <span>{guideOpen ? "접기" : "가이드 보기"}</span>
-          </button>
-
-          {guideOpen && (
-            <div className="guide-content">
-              <article>
-                <h3>핵심 개념</h3>
-                <ul>
-                  {currentGuide.concepts.map((concept) => (
-                    <li key={concept}>{concept}</li>
-                  ))}
-                </ul>
+      <section className="weave-section">
+        <div className="weave-wordmark" aria-hidden="true">WEAVE&</div>
+        <div className="weave-story">
+          <p className="eyebrow">WEAVE&</p>
+          <h2>
+            좋은 AI 결과는
+            <span className="weave-accent">프롬프트에서</span>
+            <span>시작되지 않습니다.</span>
+            <span className="weave-accent">잘 설계된 업무에서</span>
+            <span>시작됩니다.</span>
+          </h2>
+          <div className="weave-copy">
+            <strong>AI 업무 운영 훈련실</strong>
+            <p>
+              직장인이 자신의 업무를 AI가 이해하고 실행할 수 있는 형태로 설계하고 연습하는 실습형 학습
+              도구입니다.
+            </p>
+          </div>
+          <div className="weave-powered">
+            <span>Powered by WEAVE&</span>
+            <strong>AI Learning OS</strong>
+          </div>
+        </div>
+        <div className="weave-card">
+          <blockquote>
+            <span>기술보다</span>
+            <span>중요한 것은</span>
+            <span>업무를 설계하는</span>
+            <span>능력입니다.</span>
+          </blockquote>
+          <div className="weave-capabilities">
+            {weaveCapabilities.map(({ icon: Icon, title }) => (
+              <article key={title}>
+                <Icon size={20} />
+                <span>{title}</span>
               </article>
-              <article className="example-card">
-                <h3>예시 비교</h3>
-                <div>
-                  <span>약한 예시</span>
-                  <p>{currentGuide.badExample}</p>
-                </div>
-                <div>
-                  <span>좋은 예시</span>
-                  <p>{currentGuide.goodExample}</p>
-                </div>
-              </article>
-              <article>
-                <h3>학생 체크리스트</h3>
-                <ul>
-                  {currentGuide.checklist.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </article>
-            </div>
-          )}
+            ))}
+          </div>
+          <a href="mailto:ceo@wilab.co.kr">
+            <Mail size={16} />
+            ceo@wilab.co.kr
+          </a>
         </div>
       </section>
     </main>
   );
 }
 
-function ResultBox({ title, value, copied, onCopy }) {
+function GuidePage({ onBack }) {
   return (
-    <div className="result-box">
+    <main className="app-shell">
+      <header className="hero hero-guide">
+        <div className="hero-content">
+          <p className="eyebrow">Training Guide</p>
+          <h1>왜 이런 훈련이 필요한가</h1>
+        </div>
+        <button className="reset-button" onClick={onBack}>
+          <ArrowRight className="turn-back" size={18} />
+          훈련실로 돌아가기
+        </button>
+      </header>
+
+      <section className="guide-page">
+        <section className="guide-document" aria-labelledby="guide-title">
+          <div className="guide-lead">
+            <p className="eyebrow">Why It Matters</p>
+            <h2 id="guide-title">AI를 잘 쓰는 훈련은 업무를 다시 설계하는 훈련입니다.</h2>
+            <p>
+              이 훈련은 프롬프트 문장을 멋지게 쓰는 연습이 아닙니다. 내 업무를 AI가 처리 가능한 형태로
+              구조화하고, 사람이 검토할 수 있는 결과물로 만드는 연습입니다.
+            </p>
+          </div>
+          <div className="guide-grid">
+            {guideReasons.map((reason, index) => (
+              <article key={reason.title}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <h3>{reason.title}</h3>
+                <p>{reason.text}</p>
+              </article>
+            ))}
+          </div>
+          <div className="guide-rule">
+            <strong>훈련 원칙</strong>
+            <p>AI Ready Check → 업무 선정 → 기준 자료 구성 → AI 역할 설정 → 출력 형식 표준화 → 사람 검토 순서로 진행합니다.</p>
+          </div>
+        </section>
+
+        <section className="guide-flow" aria-label="훈련 흐름">
+          {steps.map((step, index) => (
+            <article key={step.id}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <h2>{step.label}</h2>
+              <p>{guideFlowText[step.id]}</p>
+            </article>
+          ))}
+        </section>
+
+        <section className="trainer-guide" aria-labelledby="trainer-guide-title">
+          <div>
+            <p className="eyebrow">Facilitator Guide</p>
+            <h2 id="trainer-guide-title">교육자는 훈련 시간을 이렇게 설계할 수 있습니다.</h2>
+          </div>
+          <div className="trainer-grid">
+            {trainerModes.map((mode) => (
+              <article key={mode.title}>
+                <h3>{mode.title}</h3>
+                <p>{mode.text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      </section>
+    </main>
+  );
+}
+
+const guideFlowText = {
+  0: "AI에게 맡기기 전에 반복성, 기준 자료, 사람 검토 가능성, 보안 조건을 먼저 점검합니다.",
+  1: "모든 업무가 아니라 반복되고, 자료가 있고, 사람이 최종 검토할 수 있는 업무 하나를 고릅니다.",
+  2: "AI가 참고해야 할 최신 기준 자료를 정리하고, 우리 조직 자료를 추가하거나 불필요한 기본 자료를 삭제합니다.",
+  3: "AI를 일반 도우미가 아니라 선택한 업무를 맡는 전담 보조자로 고정합니다.",
+  4: "결과물이 팀에서 바로 검토될 수 있도록 항목과 순서를 표준화합니다.",
+  5: "AI 결과물을 최종 답이 아닌 초안으로 보고, 사실·수치·보안·실행 가능성을 사람이 확인합니다.",
+};
+
+function appendUnique(current, key, item) {
+  const currentItems = current[key] ?? [];
+  if (currentItems.includes(item)) return current;
+  return { ...current, [key]: [...currentItems, item] };
+}
+
+function removeItem(current, key, item) {
+  return { ...current, [key]: (current[key] ?? []).filter((entry) => entry !== item) };
+}
+
+function reconcileOrder(order, items) {
+  const orderedItems = order.filter((item) => items.includes(item));
+  const newItems = items.filter((item) => !orderedItems.includes(item));
+  return [...orderedItems, ...newItems];
+}
+
+function moveItem(items, item, direction) {
+  const index = items.indexOf(item);
+  const nextIndex = direction === "up" ? index - 1 : index + 1;
+
+  if (index < 0 || nextIndex < 0 || nextIndex >= items.length) {
+    return items;
+  }
+
+  const nextItems = [...items];
+  [nextItems[index], nextItems[nextIndex]] = [nextItems[nextIndex], nextItems[index]];
+  return nextItems;
+}
+
+function getAiReadyResult(count) {
+  if (count <= 2) {
+    return {
+      tone: "low",
+      title: "아직 AI 적용 준비가 부족합니다.",
+      range: "0~2개",
+      text: "먼저 업무 목표, 기준자료, 검토 기준을 정리한 후 다시 확인해보세요.",
+      feedback: "업무가 AI에게 맡길 수 있는 형태가 되도록 목표와 기준을 조금 더 준비해보세요.",
+    };
+  }
+
+  if (count <= 4) {
+    return {
+      tone: "mid",
+      title: "AI를 일부 업무부터 적용할 수 있습니다.",
+      range: "3~4개",
+      text: "기준자료와 출력 형식을 조금 더 구체적으로 정리하면 AI 활용 효과가 크게 향상됩니다.",
+      feedback: "기준자료와 결과물 형식을 보강하면 AI가 더 안정적으로 업무를 수행할 수 있습니다.",
+    };
+  }
+
+  return {
+    tone: "high",
+    title: "AI 적용 준비가 완료되었습니다.",
+    range: "5~6개",
+    text: "이 업무는 AI가 안정적으로 수행하기 좋은 조건을 갖추고 있습니다.",
+    feedback: "이제 AI에게 맡길 업무를 구체적으로 설계해보겠습니다.",
+  };
+}
+
+function loadTrainingRecords() {
+  try {
+    const savedRecords = window.localStorage.getItem(trainingRecordStorageKey);
+    if (!savedRecords) return [];
+    const parsedRecords = JSON.parse(savedRecords);
+    return Array.isArray(parsedRecords) ? parsedRecords : [];
+  } catch {
+    return [];
+  }
+}
+
+function downloadMarkdownRecord(record) {
+  const savedDate = formatRecordDate(record.savedAt);
+  const markdown = `# AI Learning OS for Knowledge Workers 훈련 기록
+
+- 저장 일시: ${savedDate}
+- 훈련 업무: ${record.work}
+
+## 1. 실제 업무자료
+
+${record.practiceData || "작성된 실제 업무자료가 없습니다."}
+
+## 2. 실습 프롬프트
+
+\`\`\`text
+${record.practicePrompt}
+\`\`\`
+
+## 3. AI 결과 초안
+
+${record.aiDraft || "붙여넣은 AI 결과 초안이 없습니다."}
+
+## 4. 사람 검토 및 개선 메모
+
+${record.reviewMemo || "작성된 검토 메모가 없습니다."}
+
+## 기준 자료
+
+${record.sourceMaterials.map((item) => `- ${item}`).join("\n") || "- 없음"}
+
+## 출력 형식
+
+${record.outputFormat.map((item, index) => `${index + 1}. ${item}`).join("\n") || "없음"}
+
+## 확인한 검토 기준
+
+${record.checkedReviews.map((item) => `- ${item}`).join("\n") || "- 체크한 검토 기준이 없습니다."}
+`;
+
+  const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `ai-work-training-${record.work}-${record.savedAt.slice(0, 10)}.md`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+function formatRecordDate(value) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function StepCard({ icon: Icon, title, text, children }) {
+  return (
+    <article className="step-card">
+      <div className="step-card-head">
+        <Icon size={24} />
+        <div>
+          <h2>{title}</h2>
+          <p>{text}</p>
+        </div>
+      </div>
+      {children}
+    </article>
+  );
+}
+
+function AiReadyCheck({ checkedItems, onNext, onToggle }) {
+  const checkedCount = checkedItems.length;
+  const result = getAiReadyResult(checkedCount);
+  const progressPercent = Math.round((checkedCount / aiReadyChecklist.length) * 100);
+  const filledStars = Math.min(5, checkedCount);
+  const stars = `${"★".repeat(filledStars)}${"☆".repeat(5 - filledStars)}`;
+
+  return (
+    <section className="ai-ready-check" aria-label="AI 적용 적합도 진단">
+      <div className="ai-ready-intro">
+        <div className="ai-ready-progress">
+          <div>
+            <p className="eyebrow">STEP 0</p>
+            <span>AI Ready Check</span>
+          </div>
+          <strong>{checkedCount} / 6</strong>
+          <span className="ai-ready-stars" aria-label={`${checkedCount}개 체크됨`}>
+            {stars}
+          </span>
+        </div>
+        <div className="ai-ready-progress-bar" aria-hidden="true">
+          <span style={{ width: `${progressPercent}%` }} />
+        </div>
+        <h2>이 업무는 AI에게 맡길 준비가 되었을까요?</h2>
+        <p>
+          AI는 모든 업무를 잘하는 것이 아닙니다. <strong>기준이 명확하고 반복 가능한 업무</strong>를 가장 잘
+          수행합니다.
+        </p>
+      </div>
+
+      <div className="ai-ready-why">
+        <span>왜 이 단계를 먼저 하나요?</span>
+        <strong>
+          좋은 AI 결과는 좋은 프롬프트에서 시작되지 않습니다.
+          <br />
+          잘 설계된 업무에서 시작됩니다.
+        </strong>
+        <p>
+          프롬프트를 만들기 전에, 먼저 AI가 이해하고 수행할 수 있는 업무인지 확인합니다.
+        </p>
+      </div>
+
+      <div className="ai-ready-action-hint">
+        <span className="check-box is-demo" aria-hidden="true">
+          <CheckCircle2 size={16} />
+        </span>
+        <p>
+          <strong>AI Ready Check</strong>
+          <small>아래 항목을 체크해보세요. 5개 이상이면 AI 적용 준비가 된 업무입니다.</small>
+        </p>
+      </div>
+
+      <div className="ai-ready-list">
+        {aiReadyChecklist.map((item, index) => {
+          const isChecked = checkedItems.includes(item.id);
+
+          return (
+            <button
+              aria-pressed={isChecked}
+              className={isChecked ? "is-checked" : ""}
+              key={item.id}
+              onClick={() => onToggle(item.id)}
+              type="button"
+            >
+              <span className="check-box" aria-hidden="true">
+                {isChecked && <CheckCircle2 size={18} />}
+              </span>
+              <span>
+                <b>
+                  {index + 1}. {item.title}
+                </b>
+                {item.examples && (
+                  <small className="ai-ready-examples">
+                    예) {item.examples.join(", ")}
+                  </small>
+                )}
+                <small>{item.note}</small>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className={`ai-ready-result is-${result.tone}`}>
+        <div>
+          <span>AI Ready Check 결과 · {result.range}</span>
+          <strong>{result.title}</strong>
+          <p>{result.text}</p>
+          <em>{result.feedback}</em>
+        </div>
+      </div>
+
+      <div className="ai-ready-next">
+        <p>
+          이제 다음 단계에서는 AI에게 맡길 업무를 선택하고, AI가 이해할 수 있도록 업무를 구조화해보겠습니다.
+        </p>
+        <NextButton onClick={onNext}>다음 단계</NextButton>
+      </div>
+    </section>
+  );
+}
+
+function SuggestionList({
+  customItems = [],
+  items,
+  movable = false,
+  onMoveItem,
+  onRemoveItem,
+  ordered = false,
+  removableItems = [],
+}) {
+  const Tag = ordered ? "ol" : "ul";
+
+  return (
+    <Tag className="suggestion-list">
+      {items.map((item, index) => (
+        <li className={customItems.includes(item) ? "is-custom" : ""} key={item}>
+          <CheckCircle2 size={18} />
+          <span>{item}</span>
+          <div className="suggestion-actions">
+            {movable && (
+              <>
+                <button
+                  aria-label={`${item} 위로 이동`}
+                  disabled={index === 0}
+                  onClick={() => onMoveItem(item, "up")}
+                >
+                  <ArrowUp size={15} />
+                </button>
+                <button
+                  aria-label={`${item} 아래로 이동`}
+                  disabled={index === items.length - 1}
+                  onClick={() => onMoveItem(item, "down")}
+                >
+                  <ArrowDown size={15} />
+                </button>
+              </>
+            )}
+            {removableItems.includes(item) && (
+              <button aria-label={`${item} 삭제`} onClick={() => onRemoveItem(item)}>
+                <X size={16} />
+              </button>
+            )}
+          </div>
+        </li>
+      ))}
+    </Tag>
+  );
+}
+
+function Adder({ buttonLabel, label, onAdd, onChange, placeholder, value }) {
+  return (
+    <div className="material-adder">
+      <label>{label}</label>
       <div>
-        <strong>{title}</strong>
-        <button onClick={onCopy} type="button">
-          {copied ? <Check size={16} /> : <Copy size={16} />}
-          {copied ? "복사됨" : "복사"}
+        <input
+          onChange={(event) => onChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") onAdd();
+          }}
+          placeholder={placeholder}
+          value={value}
+        />
+        <button onClick={onAdd}>
+          <Plus size={18} />
+          {buttonLabel}
         </button>
       </div>
-      <p>{value}</p>
     </div>
   );
 }
 
-function ScoreInput({ label, value, onChange }) {
+function TrainingNote({ text }) {
   return (
-    <label>
-      {label}
-      <input min="1" max="5" type="range" value={value} onChange={(event) => onChange(Number(event.target.value))} />
-    </label>
+    <div className="training-note">
+      <Sparkles size={18} />
+      <p>{text}</p>
+    </div>
   );
 }
 
-function scoreShot(shot) {
-  return Number(shot.brand) + Number(shot.attention) + Number(shot.vertical);
+function PracticeLab({
+  aiDraft,
+  beforePrompt,
+  checkedReviews,
+  onChangeAiDraft,
+  onChangePracticeData,
+  onChangeReviewMemo,
+  onCopyPracticePrompt,
+  onSaveTrainingRecord,
+  onToggleReview,
+  practiceData,
+  practicePrompt,
+  recentRecords,
+  reviewMemo,
+  saveMessage,
+  scenario,
+}) {
+  const canSaveRecord = Boolean(practiceData.trim() || aiDraft.trim() || reviewMemo.trim());
+  const [isPromptExpanded, setIsPromptExpanded] = useState(false);
+  const [hasCopiedPracticePrompt, setHasCopiedPracticePrompt] = useState(false);
+  const [hasSavedCurrentRecord, setHasSavedCurrentRecord] = useState(false);
+
+  useEffect(() => {
+    setHasCopiedPracticePrompt(false);
+    setHasSavedCurrentRecord(false);
+  }, [scenario.id]);
+
+  useEffect(() => {
+    setHasSavedCurrentRecord(false);
+  }, [practiceData, aiDraft, reviewMemo, checkedReviews.length]);
+
+  const statusItems = [
+    { label: "자료 입력", done: Boolean(practiceData.trim()) },
+    { label: "프롬프트 복사", done: hasCopiedPracticePrompt },
+    { label: "AI 답변", done: Boolean(aiDraft.trim()) },
+    { label: "사람 검토", done: checkedReviews.length > 0 || Boolean(reviewMemo.trim()) },
+    { label: "기록 저장", done: hasSavedCurrentRecord },
+  ];
+  const doneStatusCount = statusItems.filter((item) => item.done).length;
+
+  async function handleCopyPracticePrompt() {
+    try {
+      await onCopyPracticePrompt();
+    } finally {
+      setHasCopiedPracticePrompt(true);
+    }
+  }
+
+  function handleSaveTrainingRecord() {
+    onSaveTrainingRecord();
+    setHasSavedCurrentRecord(true);
+  }
+
+  return (
+    <section className="practice-lab" aria-label="실제 업무자료 실습">
+      <div className="practice-head">
+        <div>
+          <p className="eyebrow">Practice Lab</p>
+          <h2>실제 자료로 프롬프트를 검증합니다.</h2>
+          <p>자료를 넣고, 실습 프롬프트를 ChatGPT 등 사용하는 AI에 넣은 뒤, 나온 결과와 검토 기록을 남깁니다.</p>
+        </div>
+        <button className="restore-button" onClick={handleCopyPracticePrompt}>
+          <Copy size={16} />
+          실습 프롬프트 복사
+        </button>
+      </div>
+
+      <div className="practice-steps" aria-label="실습 순서">
+        <article>
+          <span>1</span>
+          <p>실제 업무자료를 붙여넣습니다.</p>
+        </article>
+        <article>
+          <span>2</span>
+          <p>실습 프롬프트를 복사해 AI에 넣습니다.</p>
+        </article>
+        <article>
+          <span>3</span>
+          <p>AI 답변을 붙이고 사람이 검토합니다.</p>
+        </article>
+      </div>
+
+      <section className="training-status-panel" aria-label="현재 훈련 현황">
+        <div className="training-status-head">
+          <div>
+            <span>현재 훈련 현황</span>
+            <p>{doneStatusCount}/5 완료 · 다음 빈 항목을 채우면 기록 품질이 좋아집니다.</p>
+          </div>
+          <strong>{Math.round((doneStatusCount / statusItems.length) * 100)}%</strong>
+        </div>
+        <div className="status-meter" aria-hidden="true">
+          <span style={{ width: `${(doneStatusCount / statusItems.length) * 100}%` }} />
+        </div>
+        <div className="status-chip-grid">
+          {statusItems.map((item) => (
+            <span className={item.done ? "is-done" : ""} key={item.label}>
+              <CheckCircle2 size={15} />
+              {item.label}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <label className="practice-field">
+        <span>1. 실제 업무자료 붙여넣기</span>
+        <textarea
+          onChange={(event) => onChangePracticeData(event.target.value)}
+          placeholder={scenario.practice}
+          value={practiceData}
+        />
+      </label>
+
+      <article className="practice-prompt-card">
+        <div className="practice-prompt-head">
+          <div>
+            <span>2. 실습 프롬프트</span>
+            <p>복사해서 ChatGPT, Claude, Copilot 등 사용하는 AI에 붙여넣습니다.</p>
+          </div>
+          <button onClick={handleCopyPracticePrompt}>
+            <Copy size={16} />
+            복사
+          </button>
+        </div>
+        <pre className={isPromptExpanded ? "is-expanded" : ""}>{practicePrompt}</pre>
+        <div className="practice-prompt-actions">
+          <button onClick={() => setIsPromptExpanded((current) => !current)}>
+            {isPromptExpanded ? "접기" : "전체 보기"}
+          </button>
+        </div>
+      </article>
+
+      <details className="before-prompt-details">
+        <summary>비교용 막연한 요청 보기</summary>
+        <pre>{beforePrompt}</pre>
+      </details>
+
+      <label className="practice-field">
+        <span>3. AI 답변 결과 붙여넣기</span>
+        <AutoGrowTextarea
+          onChange={(event) => onChangeAiDraft(event.target.value)}
+          placeholder="2번 실습 프롬프트를 AI에 넣은 뒤, AI가 작성한 답변 결과를 여기에 붙여넣습니다."
+          value={aiDraft}
+        />
+      </label>
+
+      <section className="human-review-panel" aria-label="사람 검토 및 개선 메모">
+        <div className="human-review-head">
+          <span>4. 사람 검토 및 개선 메모</span>
+          <p>AI 답변을 그대로 쓰지 않고, 아래 기준으로 확인한 뒤 보완할 점을 남깁니다.</p>
+        </div>
+        <div className="review-grid">
+          {reviewChecklist.map((item) => (
+            <button className={checkedReviews.includes(item) ? "is-checked" : ""} key={item} onClick={() => onToggleReview(item)}>
+              <CheckCircle2 size={18} />
+              {item}
+            </button>
+          ))}
+        </div>
+        <label className="practice-field">
+          <span>개선 메모</span>
+          <AutoGrowTextarea
+            onChange={(event) => onChangeReviewMemo(event.target.value)}
+            placeholder="예: 수치 출처 확인 필요, 사내 기준 문서 추가 필요, 다음에는 생산일보 양식을 기준 자료로 넣기."
+            value={reviewMemo}
+          />
+        </label>
+      </section>
+
+      <div className="record-save-panel">
+        <div>
+          <span>5. 훈련 기록 저장</span>
+          <p>실제 자료, 실습 프롬프트, AI 결과, 사람 검토 메모를 하나의 기록으로 남깁니다.</p>
+        </div>
+        <button disabled={!canSaveRecord} onClick={handleSaveTrainingRecord}>
+          <Save size={17} />
+          기록 저장하고 파일 받기
+        </button>
+      </div>
+
+      {saveMessage && <p className="save-message">{saveMessage}</p>}
+
+      {recentRecords.length > 0 && (
+        <div className="record-history" aria-label="최근 저장 기록">
+          <div className="record-history-head">
+            <span>최근 저장 기록</span>
+            <small>총 {recentRecords.length}개</small>
+          </div>
+          <ul>
+            {recentRecords.slice(0, 3).map((record) => (
+              <li key={record.id}>
+                <div>
+                  <b>{record.work}</b>
+                  <small>{formatRecordDate(record.savedAt)}</small>
+                </div>
+                <RecordCompletion record={record} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function RecordCompletion({ record }) {
+  const checks = [
+    { label: "자료", done: Boolean(record.practiceData?.trim()) },
+    { label: "AI 답변", done: Boolean(record.aiDraft?.trim()) },
+    { label: "검토", done: (record.checkedReviews ?? []).length > 0 },
+    { label: "메모", done: Boolean(record.reviewMemo?.trim()) },
+  ];
+  const completed = checks.filter((check) => check.done).length;
+
+  return (
+    <div className="record-completion">
+      <strong>완성도 {completed}/{checks.length}</strong>
+      <div>
+        {checks.map((check) => (
+          <span className={check.done ? "is-done" : ""} key={check.label}>
+            {check.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AutoGrowTextarea({ onChange, placeholder, value }) {
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [value]);
+
+  return (
+    <textarea
+      className="auto-grow-textarea"
+      onChange={onChange}
+      placeholder={placeholder}
+      ref={textareaRef}
+      value={value}
+    />
+  );
+}
+
+function NextButton({ children, onClick }) {
+  return (
+    <button className="next-button" onClick={onClick}>
+      {children}
+      <ArrowRight size={18} />
+    </button>
+  );
 }
 
 export default App;
