@@ -503,7 +503,7 @@ h2 {
 }
 
 .ai-ready-intro h2 {
-  font-size: clamp(1.6rem, 3vw, 2.7rem);
+  font-size: clamp(1.55rem, 2.65vw, 2.35rem);
   line-height: 1.1;
 }
 
@@ -589,8 +589,8 @@ h2 {
   display: grid;
   gap: 10px;
   grid-template-columns: auto minmax(0, 1fr);
-  min-height: 74px;
-  padding: 13px;
+  min-height: 126px;
+  padding: 15px;
   text-align: left;
   transition:
     background 0.18s ease,
@@ -654,8 +654,15 @@ h2 {
 }
 
 .ai-ready-list span {
+  display: grid;
+  gap: 6px;
   font-weight: 850;
   line-height: 1.45;
+}
+
+.ai-ready-list b {
+  font-size: 0.98rem;
+  line-height: 1.35;
 }
 
 .ai-ready-list small {
@@ -663,7 +670,12 @@ h2 {
   display: block;
   font-size: 0.78rem;
   font-weight: 750;
-  margin-top: 4px;
+  line-height: 1.45;
+  margin-top: 0;
+}
+
+.ai-ready-list .ai-ready-examples {
+  color: var(--green);
 }
 
 .ai-ready-result {
