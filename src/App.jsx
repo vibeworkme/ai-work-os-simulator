@@ -497,8 +497,8 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
     <main className="app-shell">
       <header className="hero">
         <div className="hero-content">
+          <h1 className="sr-only">AI Learning OS for Knowledge Workers</h1>
           <p className="eyebrow">AI Learning OS for Knowledge Workers</p>
-          <h1>AI에게 일을 맡기기 전, 업무의 기준부터 설계합니다.</h1>
         </div>
         <div className="hero-actions">
           <a className="ghost-button" href="/llms-full.txt">
