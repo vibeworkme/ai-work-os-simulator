@@ -812,6 +812,92 @@ h2 {
   margin-top: 5px;
 }
 
+.training-status-panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.training-status-head {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.training-status-head span {
+  color: var(--green);
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.training-status-head p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 750;
+  line-height: 1.45;
+  margin-top: 5px;
+}
+
+.training-status-head strong {
+  align-items: center;
+  background: var(--ink);
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+  height: 42px;
+  justify-content: center;
+  width: 58px;
+}
+
+.status-meter {
+  background: #edf1ee;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.status-meter span {
+  background: var(--green);
+  display: block;
+  height: 100%;
+  transition: width 180ms ease;
+}
+
+.status-chip-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.status-chip-grid span {
+  align-items: center;
+  background: #fbfdfb;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 850;
+  gap: 6px;
+  justify-content: center;
+  min-height: 34px;
+  padding: 6px;
+  text-align: center;
+}
+
+.status-chip-grid span.is-done {
+  background: var(--soft-green);
+  border-color: rgba(34, 114, 91, 0.28);
+  color: var(--green);
+}
+
 .save-message {
   background: var(--soft-green);
   border: 1px solid rgba(34, 114, 91, 0.24);
@@ -830,6 +916,18 @@ h2 {
   padding: 14px;
 }
 
+.record-history-head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.record-history-head small {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
 .record-history ul {
   display: grid;
   gap: 8px;
@@ -839,10 +937,11 @@ h2 {
 }
 
 .record-history li {
-  align-items: center;
+  align-items: start;
   border-top: 1px solid rgba(207, 218, 211, 0.72);
-  display: flex;
-  gap: 10px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
   justify-content: space-between;
   min-width: 0;
   padding-top: 8px;
@@ -857,9 +956,46 @@ h2 {
 
 .record-history small {
   color: var(--muted);
-  flex: 0 0 auto;
+  display: block;
   font-size: 0.78rem;
   font-weight: 700;
+  margin-top: 3px;
+}
+
+.record-completion {
+  display: grid;
+  gap: 5px;
+  justify-items: end;
+}
+
+.record-completion strong {
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.record-completion div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.record-completion span {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 850;
+  padding: 3px 7px;
+}
+
+.record-completion span.is-done {
+  background: var(--soft-green);
+  border-color: rgba(34, 114, 91, 0.25);
+  color: var(--green);
 }
 
 .practice-prompt-card {
@@ -1348,6 +1484,7 @@ h2 {
   .guide-flow,
   .practice-steps,
   .review-grid,
+  .status-chip-grid,
   .practice-prompt-head,
   .record-save-panel {
     grid-template-columns: 1fr;
@@ -1419,12 +1556,20 @@ h2 {
 
   .step-card-head,
   .practice-head,
+  .training-status-head,
+  .record-history-head,
   .suggestion-list li,
   .training-note,
   .completion-note,
   .record-history li {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .record-completion,
+  .record-completion div {
+    justify-items: start;
+    justify-content: flex-start;
   }
 
   .suggestion-actions {

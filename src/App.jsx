@@ -1015,6 +1015,25 @@ function PracticeLab({
 }) {
   const canSaveRecord = Boolean(practiceData.trim() || aiDraft.trim() || reviewMemo.trim());
   const [isPromptExpanded, setIsPromptExpanded] = useState(false);
+  const [hasCopiedPracticePrompt, setHasCopiedPracticePrompt] = useState(false);
+  const latestRecord = recentRecords[0];
+  const isLatestRecordForCurrentWork = latestRecord?.work === scenario.work;
+  const statusItems = [
+    { label: "자료 입력", done: Boolean(practiceData.trim()) },
+    { label: "프롬프트 복사", done: hasCopiedPracticePrompt },
+    { label: "AI 답변", done: Boolean(aiDraft.trim()) },
+    { label: "사람 검토", done: checkedReviews.length > 0 || Boolean(reviewMemo.trim()) },
+    { label: "기록 저장", done: Boolean(isLatestRecordForCurrentWork) },
+  ];
+  const doneStatusCount = statusItems.filter((item) => item.done).length;
+
+  async function handleCopyPracticePrompt() {
+    try {
+      await onCopyPracticePrompt();
+    } finally {
+      setHasCopiedPracticePrompt(true);
+    }
+  }
 
   return (
     <section className="practice-lab" aria-label="실제 업무자료 실습">
@@ -1024,7 +1043,7 @@ function PracticeLab({
           <h2>실제 자료로 프롬프트를 검증합니다.</h2>
           <p>자료를 넣고, 실습 프롬프트를 ChatGPT 등 사용하는 AI에 넣은 뒤, 나온 결과와 검토 기록을 남깁니다.</p>
         </div>
-        <button className="restore-button" onClick={onCopyPracticePrompt}>
+        <button className="restore-button" onClick={handleCopyPracticePrompt}>
           <Copy size={16} />
           실습 프롬프트 복사
         </button>
@@ -1045,6 +1064,27 @@ function PracticeLab({
         </article>
       </div>
 
+      <section className="training-status-panel" aria-label="현재 훈련 현황">
+        <div className="training-status-head">
+          <div>
+            <span>현재 훈련 현황</span>
+            <p>{doneStatusCount}/5 완료 · 다음 빈 항목을 채우면 기록 품질이 좋아집니다.</p>
+          </div>
+          <strong>{Math.round((doneStatusCount / statusItems.length) * 100)}%</strong>
+        </div>
+        <div className="status-meter" aria-hidden="true">
+          <span style={{ width: `${(doneStatusCount / statusItems.length) * 100}%` }} />
+        </div>
+        <div className="status-chip-grid">
+          {statusItems.map((item) => (
+            <span className={item.done ? "is-done" : ""} key={item.label}>
+              <CheckCircle2 size={15} />
+              {item.label}
+            </span>
+          ))}
+        </div>
+      </section>
+
       <label className="practice-field">
         <span>1. 실제 업무자료 붙여넣기</span>
         <textarea
@@ -1060,7 +1100,7 @@ function PracticeLab({
             <span>2. 실습 프롬프트</span>
             <p>복사해서 ChatGPT, Claude, Copilot 등 사용하는 AI에 붙여넣습니다.</p>
           </div>
-          <button onClick={onCopyPracticePrompt}>
+          <button onClick={handleCopyPracticePrompt}>
             <Copy size={16} />
             복사
           </button>
@@ -1125,18 +1165,47 @@ function PracticeLab({
 
       {recentRecords.length > 0 && (
         <div className="record-history" aria-label="최근 저장 기록">
-          <span>최근 저장 기록</span>
+          <div className="record-history-head">
+            <span>최근 저장 기록</span>
+            <small>총 {recentRecords.length}개</small>
+          </div>
           <ul>
             {recentRecords.slice(0, 3).map((record) => (
               <li key={record.id}>
-                <b>{record.work}</b>
-                <small>{formatRecordDate(record.savedAt)}</small>
+                <div>
+                  <b>{record.work}</b>
+                  <small>{formatRecordDate(record.savedAt)}</small>
+                </div>
+                <RecordCompletion record={record} />
               </li>
             ))}
           </ul>
         </div>
       )}
     </section>
+  );
+}
+
+function RecordCompletion({ record }) {
+  const checks = [
+    { label: "자료", done: Boolean(record.practiceData?.trim()) },
+    { label: "AI 답변", done: Boolean(record.aiDraft?.trim()) },
+    { label: "검토", done: (record.checkedReviews ?? []).length > 0 },
+    { label: "메모", done: Boolean(record.reviewMemo?.trim()) },
+  ];
+  const completed = checks.filter((check) => check.done).length;
+
+  return (
+    <div className="record-completion">
+      <strong>완성도 {completed}/{checks.length}</strong>
+      <div>
+        {checks.map((check) => (
+          <span className={check.done ? "is-done" : ""} key={check.label}>
+            {check.label}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
 
