@@ -179,9 +179,10 @@ h2 {
 
 .stepper {
   align-items: center;
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr auto 1fr;
+  justify-content: center;
   margin: 0 auto;
   max-width: 1220px;
   padding: 22px clamp(18px, 4vw, 44px) 0;
@@ -381,6 +382,7 @@ h2 {
 
 .stepper button {
   align-items: center;
+  flex: 1 1 150px;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -423,7 +425,134 @@ h2 {
 }
 
 .stepper > svg {
+  flex: 0 0 auto;
   color: var(--muted);
+}
+
+.ai-ready-check {
+  display: grid;
+  gap: 16px;
+}
+
+.ai-ready-intro {
+  background: var(--soft-green);
+  border: 1px solid rgba(34, 114, 91, 0.24);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.ai-ready-intro h2 {
+  font-size: clamp(1.6rem, 3vw, 2.7rem);
+  line-height: 1.1;
+}
+
+.ai-ready-intro p:not(.eyebrow) {
+  color: var(--muted);
+  font-weight: 750;
+  line-height: 1.6;
+  margin-top: 10px;
+}
+
+.ai-ready-intro strong {
+  color: var(--green);
+}
+
+.ai-ready-list {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ai-ready-list button {
+  align-items: start;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  display: grid;
+  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 74px;
+  padding: 13px;
+  text-align: left;
+}
+
+.ai-ready-list button.is-checked {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.ai-ready-list button svg {
+  color: var(--green);
+  margin-top: 2px;
+}
+
+.ai-ready-list button.is-checked svg,
+.ai-ready-list button.is-checked small {
+  color: #99f6e4;
+}
+
+.ai-ready-list span {
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.ai-ready-list small {
+  color: var(--muted);
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 750;
+  margin-top: 4px;
+}
+
+.ai-ready-result {
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.ai-ready-result.is-low {
+  background: #fff7ed;
+  border: 1px solid rgba(168, 103, 45, 0.32);
+}
+
+.ai-ready-result.is-mid {
+  background: var(--paper);
+  border: 1px solid rgba(168, 103, 45, 0.24);
+}
+
+.ai-ready-result.is-high {
+  background: var(--soft-green);
+  border: 1px solid rgba(34, 114, 91, 0.28);
+}
+
+.ai-ready-result span {
+  color: var(--blue);
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 900;
+  margin-bottom: 7px;
+}
+
+.ai-ready-result strong {
+  display: block;
+  font-size: 1.12rem;
+  line-height: 1.35;
+}
+
+.ai-ready-result p,
+.ai-ready-next p {
+  color: var(--muted);
+  font-weight: 750;
+  line-height: 1.55;
+  margin-top: 6px;
+}
+
+.ai-ready-next {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
 }
 
 .workspace {
@@ -1387,12 +1516,14 @@ h2 {
   }
 
   .stepper {
-    grid-template-columns: 1fr;
+    align-items: stretch;
+    flex-direction: column;
     max-width: 720px;
   }
 
   .stepper > svg {
     justify-self: center;
+    margin: 0 auto;
     transform: rotate(90deg);
   }
 
@@ -1483,6 +1614,7 @@ h2 {
   .guide-grid,
   .guide-flow,
   .practice-steps,
+  .ai-ready-list,
   .review-grid,
   .status-chip-grid,
   .practice-prompt-head,
@@ -1556,6 +1688,7 @@ h2 {
 
   .step-card-head,
   .practice-head,
+  .ai-ready-next,
   .training-status-head,
   .record-history-head,
   .suggestion-list li,

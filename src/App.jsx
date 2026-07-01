@@ -99,11 +99,21 @@ const scenarios = [
 ];
 
 const steps = [
+  { id: 0, label: "AI Ready Check" },
   { id: 1, label: "업무 선정" },
   { id: 2, label: "기준 자료 구성" },
   { id: 3, label: "AI 역할 설정" },
   { id: 4, label: "출력 형식 표준화" },
   { id: 5, label: "검토 루프" },
+];
+
+const aiReadyChecklist = [
+  "반복적으로 발생하는 업무이다.",
+  "업무를 수행하기 위한 기준자료가 있다.",
+  "결과물을 사람이 최종 검토할 수 있다.",
+  "출력 형식이 어느 정도 정해져 있다.",
+  "개인정보 또는 기밀정보가 과도하게 포함되지 않는다.",
+  "매번 처음부터 창의적으로 만들어야 하는 업무가 아니다.",
 ];
 
 const benchmarkPrinciples = [
@@ -168,7 +178,8 @@ const weaveCapabilities = [
 function App() {
   const [page, setPage] = useState(() => (window.location.hash === "#guide" ? "guide" : "training"));
   const [selectedId, setSelectedId] = useState("");
-  const [activeStep, setActiveStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(0);
+  const [aiReadyChecks, setAiReadyChecks] = useState([]);
   const [customMaterialInput, setCustomMaterialInput] = useState("");
   const [customOutputInput, setCustomOutputInput] = useState("");
   const [customMaterialsByWork, setCustomMaterialsByWork] = useState({});
@@ -303,7 +314,8 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
 
   function reset() {
     setSelectedId("");
-    setActiveStep(1);
+    setActiveStep(0);
+    setAiReadyChecks([]);
     setCustomMaterialInput("");
     setCustomOutputInput("");
     setCheckedReviews([]);
@@ -463,6 +475,12 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
     );
   }
 
+  function toggleAiReadyCheck(item) {
+    setAiReadyChecks((current) =>
+      current.includes(item) ? current.filter((entry) => entry !== item) : [...current, item],
+    );
+  }
+
   async function copyPrompt() {
     await navigator.clipboard.writeText(promptTemplate);
   }
@@ -537,6 +555,20 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
                   </button>
                 ))}
               </div>
+            </StepCard>
+          )}
+
+          {activeStep === 0 && (
+            <StepCard
+              icon={CheckCircle2}
+              title="AI Ready Check"
+              text="AI에게 일을 맡기기 전에, 이 업무가 AI에 적합한지 먼저 확인합니다."
+            >
+              <AiReadyCheck
+                checkedItems={aiReadyChecks}
+                onNext={() => setActiveStep(1)}
+                onToggle={toggleAiReadyCheck}
+              />
             </StepCard>
           )}
 
@@ -765,7 +797,7 @@ function GuidePage({ onBack }) {
           </div>
           <div className="guide-rule">
             <strong>훈련 원칙</strong>
-            <p>업무 선정 → 기준 자료 구성 → AI 역할 설정 → 출력 형식 표준화 → 사람 검토 순서로 진행합니다.</p>
+            <p>AI Ready Check → 업무 선정 → 기준 자료 구성 → AI 역할 설정 → 출력 형식 표준화 → 사람 검토 순서로 진행합니다.</p>
           </div>
         </section>
 
@@ -799,6 +831,7 @@ function GuidePage({ onBack }) {
 }
 
 const guideFlowText = {
+  0: "AI에게 맡기기 전에 반복성, 기준 자료, 사람 검토 가능성, 보안 조건을 먼저 점검합니다.",
   1: "모든 업무가 아니라 반복되고, 자료가 있고, 사람이 최종 검토할 수 있는 업무 하나를 고릅니다.",
   2: "AI가 참고해야 할 최신 기준 자료를 정리하고, 우리 조직 자료를 추가하거나 불필요한 기본 자료를 삭제합니다.",
   3: "AI를 일반 도우미가 아니라 선택한 업무를 맡는 전담 보조자로 고정합니다.",
@@ -833,6 +866,30 @@ function moveItem(items, item, direction) {
   const nextItems = [...items];
   [nextItems[index], nextItems[nextIndex]] = [nextItems[nextIndex], nextItems[index]];
   return nextItems;
+}
+
+function getAiReadyResult(count) {
+  if (count <= 2) {
+    return {
+      tone: "low",
+      title: "아직 AI 적용이 어렵습니다.",
+      text: "기준 자료, 반복성, 검토 가능성을 먼저 정리한 뒤 다시 점검해보세요.",
+    };
+  }
+
+  if (count <= 4) {
+    return {
+      tone: "mid",
+      title: "일부 업무부터 AI를 적용해보세요.",
+      text: "전체 업무를 맡기기보다 초안 작성, 요약, 분류처럼 작은 단위부터 시작하는 것이 좋습니다.",
+    };
+  }
+
+  return {
+    tone: "high",
+    title: "AI 적용에 매우 적합한 업무입니다.",
+    text: "반복성, 기준 자료, 사람 검토 조건이 갖춰져 있어 다음 단계에서 업무를 선택해도 좋습니다.",
+  };
 }
 
 function loadTrainingRecords() {
@@ -914,6 +971,49 @@ function StepCard({ icon: Icon, title, text, children }) {
       </div>
       {children}
     </article>
+  );
+}
+
+function AiReadyCheck({ checkedItems, onNext, onToggle }) {
+  const result = getAiReadyResult(checkedItems.length);
+
+  return (
+    <section className="ai-ready-check" aria-label="AI 적용 적합도 진단">
+      <div className="ai-ready-intro">
+        <p className="eyebrow">AI Ready Check</p>
+        <h2>이 업무는 AI가 잘할 수 있는 업무일까요?</h2>
+        <p>
+          AI는 모든 업무를 잘하는 것이 아니라 <strong>기준이 있는 반복 업무</strong>를 가장 잘합니다.
+        </p>
+      </div>
+
+      <div className="ai-ready-list">
+        {aiReadyChecklist.map((item) => (
+          <button className={checkedItems.includes(item) ? "is-checked" : ""} key={item} onClick={() => onToggle(item)}>
+            <CheckCircle2 size={19} />
+            <span>
+              {item}
+              {item === "업무를 수행하기 위한 기준자료가 있다." && (
+                <small>매뉴얼, 보고서, 회의록, 규정, FAQ 등</small>
+              )}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <div className={`ai-ready-result is-${result.tone}`}>
+        <div>
+          <span>{checkedItems.length}/6 체크</span>
+          <strong>{result.title}</strong>
+          <p>{result.text}</p>
+        </div>
+      </div>
+
+      <div className="ai-ready-next">
+        <p>좋습니다. 이제 AI에게 맡길 업무를 하나 선택해보겠습니다.</p>
+        <NextButton onClick={onNext}>다음 단계</NextButton>
+      </div>
+    </section>
   );
 }
 
