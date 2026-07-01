@@ -497,7 +497,7 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
     <main className="app-shell">
       <header className="hero">
         <div className="hero-content">
-          <p className="eyebrow">일반 직장인을 위한 AI 업무 운영 훈련</p>
+          <p className="eyebrow">AI Work OS _직장인 업무 AI 훈련</p>
           <h1>AI에게 일을 맡기기 전, 업무의 기준부터 설계합니다.</h1>
         </div>
         <div className="hero-actions">
