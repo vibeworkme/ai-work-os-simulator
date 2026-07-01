@@ -457,6 +457,54 @@ h2 {
   color: var(--green);
 }
 
+.ai-ready-why {
+  background: #fff;
+  border: 1px solid rgba(34, 114, 91, 0.2);
+  border-left: 6px solid var(--green);
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
+  padding: 15px 16px;
+}
+
+.ai-ready-why span {
+  color: var(--green);
+  font-weight: 900;
+}
+
+.ai-ready-why p {
+  color: var(--muted);
+  font-weight: 760;
+  line-height: 1.58;
+}
+
+.ai-ready-action-hint {
+  align-items: center;
+  background: #f8faf7;
+  border: 1px dashed rgba(34, 114, 91, 0.42);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 12px 14px;
+}
+
+.ai-ready-action-hint p {
+  display: grid;
+  gap: 3px;
+}
+
+.ai-ready-action-hint strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.ai-ready-action-hint small {
+  color: var(--muted);
+  font-weight: 750;
+  line-height: 1.45;
+}
+
 .ai-ready-list {
   display: grid;
   gap: 10px;
@@ -469,12 +517,29 @@ h2 {
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--ink);
+  cursor: pointer;
   display: grid;
   gap: 10px;
   grid-template-columns: auto minmax(0, 1fr);
   min-height: 74px;
   padding: 13px;
   text-align: left;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.ai-ready-list button:hover {
+  border-color: rgba(34, 114, 91, 0.45);
+  box-shadow: 0 12px 26px rgba(17, 24, 39, 0.08);
+  transform: translateY(-1px);
+}
+
+.ai-ready-list button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 2px;
 }
 
 .ai-ready-list button.is-checked {
@@ -483,12 +548,39 @@ h2 {
   color: #fff;
 }
 
-.ai-ready-list button svg {
-  color: var(--green);
+.check-box {
+  align-items: center;
+  background: #fff;
+  border: 2px solid rgba(34, 114, 91, 0.54);
+  border-radius: 7px;
+  display: inline-flex;
+  height: 28px;
+  justify-content: center;
   margin-top: 2px;
+  width: 28px;
 }
 
-.ai-ready-list button.is-checked svg,
+.check-box.is-demo {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+  margin-top: 0;
+}
+
+.ai-ready-list button.is-checked .check-box {
+  background: #99f6e4;
+  border-color: #99f6e4;
+}
+
+.ai-ready-list button svg,
+.check-box svg {
+  color: var(--green);
+}
+
+.ai-ready-list button.is-checked svg {
+  color: var(--ink);
+}
+
 .ai-ready-list button.is-checked small {
   color: #99f6e4;
 }

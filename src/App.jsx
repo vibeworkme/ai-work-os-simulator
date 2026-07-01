@@ -561,8 +561,8 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
           {activeStep === 0 && (
             <StepCard
               icon={CheckCircle2}
-              title="AI Ready Check"
-              text="AI에게 일을 맡기기 전에, 이 업무가 AI에 적합한지 먼저 확인합니다."
+              title="업무 적합성 먼저 확인"
+              text="프롬프트를 만들기 전에, 이 업무가 AI에게 맡길 수 있는 형태인지 먼저 판단합니다."
             >
               <AiReadyCheck
                 checkedItems={aiReadyChecks}
@@ -978,17 +978,46 @@ function AiReadyCheck({ checkedItems, onNext, onToggle }) {
   return (
     <section className="ai-ready-check" aria-label="AI 적용 적합도 진단">
       <div className="ai-ready-intro">
-        <p className="eyebrow">AI Ready Check</p>
+        <p className="eyebrow">0번 단계</p>
         <h2>이 업무는 AI가 잘할 수 있는 업무일까요?</h2>
         <p>
           AI는 모든 업무를 잘하는 것이 아니라 <strong>기준이 있는 반복 업무</strong>를 가장 잘합니다.
         </p>
       </div>
 
+      <div className="ai-ready-why">
+        <span>왜 0번인가요?</span>
+        <p>
+          업무가 반복성, 기준자료, 검토 가능성을 갖추지 못하면 좋은 프롬프트를 써도 결과가 흔들립니다. 먼저
+          맡길 수 있는 업무인지 확인한 뒤 다음 단계로 넘어갑니다.
+        </p>
+      </div>
+
+      <div className="ai-ready-action-hint">
+        <span className="check-box is-demo" aria-hidden="true">
+          <CheckCircle2 size={16} />
+        </span>
+        <p>
+          <strong>해당되는 박스를 클릭해 체크하세요.</strong>
+          <small>다시 클릭하면 체크가 해제됩니다. 5개 이상이면 AI 적용에 적합한 업무입니다.</small>
+        </p>
+      </div>
+
       <div className="ai-ready-list">
-        {aiReadyChecklist.map((item) => (
-          <button className={checkedItems.includes(item) ? "is-checked" : ""} key={item} onClick={() => onToggle(item)}>
-            <CheckCircle2 size={19} />
+        {aiReadyChecklist.map((item) => {
+          const isChecked = checkedItems.includes(item);
+
+          return (
+          <button
+            aria-pressed={isChecked}
+            className={isChecked ? "is-checked" : ""}
+            key={item}
+            onClick={() => onToggle(item)}
+            type="button"
+          >
+            <span className="check-box" aria-hidden="true">
+              {isChecked && <CheckCircle2 size={18} />}
+            </span>
             <span>
               {item}
               {item === "업무를 수행하기 위한 기준자료가 있다." && (
@@ -996,7 +1025,8 @@ function AiReadyCheck({ checkedItems, onNext, onToggle }) {
               )}
             </span>
           </button>
-        ))}
+          );
+        })}
       </div>
 
       <div className={`ai-ready-result is-${result.tone}`}>
