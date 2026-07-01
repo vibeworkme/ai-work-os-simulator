@@ -1,4 +1,4 @@
-# AI 업무 운영 훈련실
+# AI Learning OS for Knowledge Workers
 
 일반 직장인이 반복 업무를 AI에 맡기기 전에, 업무 기준을 직접 설계해보는 훈련용 웹 앱입니다.
 

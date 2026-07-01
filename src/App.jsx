@@ -497,7 +497,7 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
     <main className="app-shell">
       <header className="hero">
         <div className="hero-content">
-          <p className="eyebrow">AI Work OS _직장인 업무 AI 훈련</p>
+          <p className="eyebrow">AI Learning OS for Knowledge Workers</p>
           <h1>AI에게 일을 맡기기 전, 업무의 기준부터 설계합니다.</h1>
         </div>
         <div className="hero-actions">
@@ -905,7 +905,7 @@ function loadTrainingRecords() {
 
 function downloadMarkdownRecord(record) {
   const savedDate = formatRecordDate(record.savedAt);
-  const markdown = `# AI 업무 운영 훈련 기록
+  const markdown = `# AI Learning OS for Knowledge Workers 훈련 기록
 
 - 저장 일시: ${savedDate}
 - 훈련 업무: ${record.work}
