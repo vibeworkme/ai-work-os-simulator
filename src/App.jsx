@@ -1016,14 +1016,23 @@ function PracticeLab({
   const canSaveRecord = Boolean(practiceData.trim() || aiDraft.trim() || reviewMemo.trim());
   const [isPromptExpanded, setIsPromptExpanded] = useState(false);
   const [hasCopiedPracticePrompt, setHasCopiedPracticePrompt] = useState(false);
-  const latestRecord = recentRecords[0];
-  const isLatestRecordForCurrentWork = latestRecord?.work === scenario.work;
+  const [hasSavedCurrentRecord, setHasSavedCurrentRecord] = useState(false);
+
+  useEffect(() => {
+    setHasCopiedPracticePrompt(false);
+    setHasSavedCurrentRecord(false);
+  }, [scenario.id]);
+
+  useEffect(() => {
+    setHasSavedCurrentRecord(false);
+  }, [practiceData, aiDraft, reviewMemo, checkedReviews.length]);
+
   const statusItems = [
     { label: "자료 입력", done: Boolean(practiceData.trim()) },
     { label: "프롬프트 복사", done: hasCopiedPracticePrompt },
     { label: "AI 답변", done: Boolean(aiDraft.trim()) },
     { label: "사람 검토", done: checkedReviews.length > 0 || Boolean(reviewMemo.trim()) },
-    { label: "기록 저장", done: Boolean(isLatestRecordForCurrentWork) },
+    { label: "기록 저장", done: hasSavedCurrentRecord },
   ];
   const doneStatusCount = statusItems.filter((item) => item.done).length;
 
@@ -1033,6 +1042,11 @@ function PracticeLab({
     } finally {
       setHasCopiedPracticePrompt(true);
     }
+  }
+
+  function handleSaveTrainingRecord() {
+    onSaveTrainingRecord();
+    setHasSavedCurrentRecord(true);
   }
 
   return (
@@ -1155,7 +1169,7 @@ function PracticeLab({
           <span>5. 훈련 기록 저장</span>
           <p>실제 자료, 실습 프롬프트, AI 결과, 사람 검토 메모를 하나의 기록으로 남깁니다.</p>
         </div>
-        <button disabled={!canSaveRecord} onClick={onSaveTrainingRecord}>
+        <button disabled={!canSaveRecord} onClick={handleSaveTrainingRecord}>
           <Save size={17} />
           기록 저장하고 파일 받기
         </button>
