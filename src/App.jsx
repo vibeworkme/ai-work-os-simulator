@@ -113,7 +113,7 @@ const aiReadyChecklist = [
   "결과물을 사람이 최종 검토할 수 있다.",
   "출력 형식이 어느 정도 정해져 있다.",
   "개인정보 또는 기밀정보가 과도하게 포함되지 않는다.",
-  "매번 처음부터 창의적으로 만들어야 하는 업무가 아니다.",
+  "매번 처음부터 새롭게 창작해야 하는 업무가 아니다.",
 ];
 
 const benchmarkPrinciples = [
@@ -561,8 +561,8 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
           {activeStep === 0 && (
             <StepCard
               icon={CheckCircle2}
-              title="업무 적합성 먼저 확인"
-              text="프롬프트를 만들기 전에, 이 업무가 AI에게 맡길 수 있는 형태인지 먼저 판단합니다."
+              title="STEP 0. AI 업무 적합성 진단"
+              text="프롬프트보다 먼저, 이 업무가 AI에 적합한지 확인합니다."
             >
               <AiReadyCheck
                 checkedItems={aiReadyChecks}
@@ -871,22 +871,28 @@ function getAiReadyResult(count) {
     return {
       tone: "low",
       title: "아직 AI 적용이 어렵습니다.",
-      text: "기준 자료, 반복성, 검토 가능성을 먼저 정리한 뒤 다시 점검해보세요.",
+      range: "0~2개 체크",
+      text: "먼저 업무를 표준화하고, 기준자료와 검토 기준을 정리한 후 다시 확인해보세요.",
+      feedback: "기준자료와 반복 구조를 조금 더 준비하면 AI 활용 가능성이 생깁니다.",
     };
   }
 
   if (count <= 4) {
     return {
       tone: "mid",
-      title: "일부 업무부터 AI를 적용해보세요.",
-      text: "전체 업무를 맡기기보다 초안 작성, 요약, 분류처럼 작은 단위부터 시작하는 것이 좋습니다.",
+      title: "AI를 일부 업무부터 적용해볼 수 있습니다.",
+      range: "3~4개 체크",
+      text: "기준자료와 출력 형식을 조금 더 구체적으로 정리하면 더 안정적인 결과를 얻을 수 있습니다.",
+      feedback: "기준자료를 조금 더 준비하면 AI 활용 효과가 더욱 높아집니다.",
     };
   }
 
   return {
     tone: "high",
-    title: "AI 적용에 매우 적합한 업무입니다.",
-    text: "반복성, 기준 자료, 사람 검토 조건이 갖춰져 있어 다음 단계에서 업무를 선택해도 좋습니다.",
+    title: "AI 적용에 적합한 업무입니다.",
+    range: "5~6개 체크",
+    text: "이제 AI에게 맡길 업무를 구체적으로 설계해보겠습니다.",
+    feedback: "좋습니다. 이 업무는 AI가 안정적으로 수행하기 좋은 조건을 갖추고 있습니다.",
   };
 }
 
@@ -973,23 +979,43 @@ function StepCard({ icon: Icon, title, text, children }) {
 }
 
 function AiReadyCheck({ checkedItems, onNext, onToggle }) {
-  const result = getAiReadyResult(checkedItems.length);
+  const checkedCount = checkedItems.length;
+  const result = getAiReadyResult(checkedCount);
+  const progressPercent = Math.round((checkedCount / aiReadyChecklist.length) * 100);
+  const filledStars = Math.min(5, checkedCount);
+  const stars = `${"★".repeat(filledStars)}${"☆".repeat(5 - filledStars)}`;
 
   return (
     <section className="ai-ready-check" aria-label="AI 적용 적합도 진단">
       <div className="ai-ready-intro">
-        <p className="eyebrow">0번 단계</p>
+        <div className="ai-ready-progress">
+          <div>
+            <p className="eyebrow">STEP 0</p>
+            <span>AI 업무 적합성</span>
+          </div>
+          <strong>{checkedCount} / 6</strong>
+          <span className="ai-ready-stars" aria-label={`${checkedCount}개 체크됨`}>
+            {stars}
+          </span>
+        </div>
+        <div className="ai-ready-progress-bar" aria-hidden="true">
+          <span style={{ width: `${progressPercent}%` }} />
+        </div>
         <h2>이 업무는 AI가 잘할 수 있는 업무일까요?</h2>
         <p>
-          AI는 모든 업무를 잘하는 것이 아니라 <strong>기준이 있는 반복 업무</strong>를 가장 잘합니다.
+          AI는 모든 업무를 잘하는 것이 아닙니다. <strong>기준이 있는 반복 업무</strong>를 가장 잘합니다.
         </p>
       </div>
 
       <div className="ai-ready-why">
-        <span>왜 0번인가요?</span>
+        <span>왜 이 단계를 먼저 하나요?</span>
+        <strong>
+          좋은 AI 결과는 좋은 프롬프트에서 시작되지 않습니다.
+          <br />
+          잘 설계된 업무에서 시작됩니다.
+        </strong>
         <p>
-          업무가 반복성, 기준자료, 검토 가능성을 갖추지 못하면 좋은 프롬프트를 써도 결과가 흔들립니다. 먼저
-          맡길 수 있는 업무인지 확인한 뒤 다음 단계로 넘어갑니다.
+          먼저 AI가 맡을 수 있는 업무인지 확인한 후 다음 단계로 진행합니다.
         </p>
       </div>
 
@@ -998,8 +1024,8 @@ function AiReadyCheck({ checkedItems, onNext, onToggle }) {
           <CheckCircle2 size={16} />
         </span>
         <p>
-          <strong>해당되는 박스를 클릭해 체크하세요.</strong>
-          <small>다시 클릭하면 체크가 해제됩니다. 5개 이상이면 AI 적용에 적합한 업무입니다.</small>
+          <strong>아래 항목을 체크해보세요.</strong>
+          <small>해당되는 박스를 클릭합니다. 5개 이상이면 AI 적용에 적합한 업무입니다.</small>
         </p>
       </div>
 
@@ -1008,37 +1034,38 @@ function AiReadyCheck({ checkedItems, onNext, onToggle }) {
           const isChecked = checkedItems.includes(item);
 
           return (
-          <button
-            aria-pressed={isChecked}
-            className={isChecked ? "is-checked" : ""}
-            key={item}
-            onClick={() => onToggle(item)}
-            type="button"
-          >
-            <span className="check-box" aria-hidden="true">
-              {isChecked && <CheckCircle2 size={18} />}
-            </span>
-            <span>
-              {item}
-              {item === "업무를 수행하기 위한 기준자료가 있다." && (
-                <small>매뉴얼, 보고서, 회의록, 규정, FAQ 등</small>
-              )}
-            </span>
-          </button>
+            <button
+              aria-pressed={isChecked}
+              className={isChecked ? "is-checked" : ""}
+              key={item}
+              onClick={() => onToggle(item)}
+              type="button"
+            >
+              <span className="check-box" aria-hidden="true">
+                {isChecked && <CheckCircle2 size={18} />}
+              </span>
+              <span>
+                {item}
+                {item === "업무를 수행하기 위한 기준자료가 있다." && (
+                  <small>매뉴얼, 보고서, 회의록, 규정, FAQ 등</small>
+                )}
+              </span>
+            </button>
           );
         })}
       </div>
 
       <div className={`ai-ready-result is-${result.tone}`}>
         <div>
-          <span>{checkedItems.length}/6 체크</span>
+          <span>AI 업무 적합성 결과 · {result.range}</span>
           <strong>{result.title}</strong>
           <p>{result.text}</p>
+          <em>{result.feedback}</em>
         </div>
       </div>
 
       <div className="ai-ready-next">
-        <p>좋습니다. 이제 AI에게 맡길 업무를 하나 선택해보겠습니다.</p>
+        <p>이제 AI에게 맡길 업무를 하나 선택해보겠습니다.</p>
         <NextButton onClick={onNext}>다음 단계</NextButton>
       </div>
     </section>

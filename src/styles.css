@@ -450,6 +450,58 @@ h2 {
   padding: 16px;
 }
 
+.ai-ready-progress {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  margin-bottom: 18px;
+}
+
+.ai-ready-progress div {
+  display: grid;
+  gap: 3px;
+}
+
+.ai-ready-progress .eyebrow {
+  margin: 0;
+}
+
+.ai-ready-progress span:not(.ai-ready-stars) {
+  color: var(--green);
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
+.ai-ready-progress strong {
+  color: var(--ink);
+  font-size: clamp(1.15rem, 2vw, 1.55rem);
+  font-weight: 950;
+}
+
+.ai-ready-stars {
+  color: #f59e0b;
+  font-size: clamp(1rem, 1.8vw, 1.35rem);
+  font-weight: 950;
+  letter-spacing: 0.04em;
+}
+
+.ai-ready-progress-bar {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(34, 114, 91, 0.15);
+  border-radius: 999px;
+  height: 10px;
+  margin-bottom: 22px;
+  overflow: hidden;
+}
+
+.ai-ready-progress-bar span {
+  background: linear-gradient(90deg, #14b8a6, #0f766e);
+  display: block;
+  height: 100%;
+  transition: width 0.2s ease;
+}
+
 .ai-ready-intro h2 {
   font-size: clamp(1.6rem, 3vw, 2.7rem);
   line-height: 1.1;
@@ -479,6 +531,13 @@ h2 {
 .ai-ready-why span {
   color: var(--green);
   font-weight: 900;
+}
+
+.ai-ready-why strong {
+  color: var(--ink);
+  font-size: clamp(1.05rem, 2.1vw, 1.55rem);
+  font-weight: 950;
+  line-height: 1.35;
 }
 
 .ai-ready-why p {
@@ -618,8 +677,8 @@ h2 {
 }
 
 .ai-ready-result.is-mid {
-  background: var(--paper);
-  border: 1px solid rgba(168, 103, 45, 0.24);
+  background: #eff6ff;
+  border: 1px solid rgba(37, 99, 235, 0.24);
 }
 
 .ai-ready-result.is-high {
@@ -647,6 +706,18 @@ h2 {
   font-weight: 750;
   line-height: 1.55;
   margin-top: 6px;
+}
+
+.ai-ready-result em {
+  background: rgba(255, 255, 255, 0.68);
+  border-radius: 8px;
+  color: var(--ink);
+  display: block;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1.55;
+  margin-top: 12px;
+  padding: 12px;
 }
 
 .ai-ready-next {
@@ -1727,6 +1798,7 @@ h2 {
   .guide-grid,
   .guide-flow,
   .practice-steps,
+  .ai-ready-progress,
   .ai-ready-list,
   .review-grid,
   .status-chip-grid,
