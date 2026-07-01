@@ -126,7 +126,8 @@ h2 {
 .prompt-head button,
 .restore-button,
 .material-adder button,
-.record-save-panel button {
+.record-save-panel button,
+.practice-prompt-head button {
   align-items: center;
   border: 1px solid var(--ink);
   border-radius: 7px;
@@ -151,7 +152,8 @@ h2 {
 
 .next-button,
 .material-adder button,
-.record-save-panel button {
+.record-save-panel button,
+.practice-prompt-head button {
   background: var(--ink);
   color: #fff;
 }
@@ -166,7 +168,8 @@ h2 {
 .prompt-head button:hover,
 .restore-button:hover,
 .material-adder button:hover,
-.record-save-panel button:hover {
+.record-save-panel button:hover,
+.practice-prompt-head button:hover {
   transform: translateY(-1px);
 }
 
@@ -753,7 +756,8 @@ h2 {
 }
 
 .practice-field span,
-.prompt-compare span {
+.practice-prompt-card span,
+.human-review-head span {
   color: var(--green);
   font-size: 0.84rem;
   font-weight: 900;
@@ -780,13 +784,6 @@ h2 {
 .practice-field textarea:focus {
   border-color: var(--green);
   box-shadow: 0 0 0 3px rgba(34, 114, 91, 0.12);
-}
-
-.prompt-compare,
-.practice-review {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .record-save-panel {
@@ -865,41 +862,94 @@ h2 {
   font-weight: 700;
 }
 
-.prompt-compare article {
-  background: #fbfdfb;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  min-width: 0;
-  padding: 12px;
-}
-
-.prompt-compare article.is-practice-prompt {
+.practice-prompt-card {
   background: var(--soft-blue);
-  border-color: rgba(45, 101, 173, 0.3);
+  border: 1px solid rgba(45, 101, 173, 0.3);
+  border-radius: 8px;
   box-shadow: inset 4px 0 0 var(--blue);
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
 }
 
-.prompt-compare article.is-practice-prompt span {
+.practice-prompt-card span {
   color: var(--blue);
 }
 
-.prompt-compare small {
+.practice-prompt-head {
+  align-items: start;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.practice-prompt-head p,
+.human-review-head p {
   color: var(--muted);
-  display: block;
-  font-size: 0.8rem;
+  font-size: 0.86rem;
   font-weight: 750;
   line-height: 1.45;
   margin-top: 5px;
 }
 
-.prompt-compare pre {
+.practice-prompt-card pre,
+.before-prompt-details pre {
   color: var(--ink);
   font-size: 0.86rem;
   line-height: 1.55;
-  margin: 9px 0 0;
-  max-height: 320px;
+  margin: 0;
+  max-height: 210px;
   overflow: auto;
   white-space: pre-wrap;
+}
+
+.practice-prompt-card pre.is-expanded {
+  max-height: 620px;
+}
+
+.practice-prompt-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.practice-prompt-actions button,
+.before-prompt-details summary {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 850;
+  min-height: 32px;
+  padding: 0 10px;
+}
+
+.before-prompt-details {
+  background: #fbfdfb;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.before-prompt-details summary {
+  align-items: center;
+  display: inline-flex;
+}
+
+.before-prompt-details pre {
+  margin-top: 12px;
+  max-height: 220px;
+}
+
+.human-review-panel {
+  background: #fbfdfb;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
 }
 
 .review-grid {
@@ -1297,9 +1347,8 @@ h2 {
   .guide-grid,
   .guide-flow,
   .practice-steps,
-  .prompt-compare,
-  .practice-review,
   .review-grid,
+  .practice-prompt-head,
   .record-save-panel {
     grid-template-columns: 1fr;
   }

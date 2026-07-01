@@ -620,28 +620,22 @@ ${reviewChecklist.map((item) => `- ${item}`).join("\n")}
             <StepCard
               icon={ShieldCheck}
               title="5. 사람 검토 루프"
-              text="AI 결과물은 최종 답이 아니라 초안입니다. 아래 항목을 확인한 뒤 업무에 반영합니다."
+              text="실제 자료를 넣고, AI 답변을 붙여넣은 뒤, 사람이 검토한 기록까지 남깁니다."
             >
-              <div className="review-grid">
-                {reviewChecklist.map((item) => (
-                  <button className={checkedReviews.includes(item) ? "is-checked" : ""} key={item} onClick={() => toggleReview(item)}>
-                    <CheckCircle2 size={18} />
-                    {item}
-                  </button>
-                ))}
-              </div>
               <div className="completion-note">
                 <CheckCircle2 size={20} />
-                <p>{selectedScenario.work} 업무 프롬프트가 완성되었습니다. 복사해서 실제 자료와 함께 사용해보세요.</p>
+                <p>{selectedScenario.work} 실습 프롬프트가 준비되었습니다. 아래 워크시트를 순서대로 진행해보세요.</p>
               </div>
               <PracticeLab
                 aiDraft={aiDraft}
                 beforePrompt={beforePrompt}
+                checkedReviews={checkedReviews}
                 onChangeAiDraft={updateAiDraft}
                 onChangePracticeData={updatePracticeData}
                 onChangeReviewMemo={updateReviewMemo}
                 onCopyPracticePrompt={copyPracticePrompt}
                 onSaveTrainingRecord={saveTrainingRecord}
+                onToggleReview={toggleReview}
                 practiceData={practiceData}
                 practicePrompt={practicePrompt}
                 recentRecords={trainingRecords}
@@ -1005,11 +999,13 @@ function TrainingNote({ text }) {
 function PracticeLab({
   aiDraft,
   beforePrompt,
+  checkedReviews,
   onChangeAiDraft,
   onChangePracticeData,
   onChangeReviewMemo,
   onCopyPracticePrompt,
   onSaveTrainingRecord,
+  onToggleReview,
   practiceData,
   practicePrompt,
   recentRecords,
@@ -1018,6 +1014,7 @@ function PracticeLab({
   scenario,
 }) {
   const canSaveRecord = Boolean(practiceData.trim() || aiDraft.trim() || reviewMemo.trim());
+  const [isPromptExpanded, setIsPromptExpanded] = useState(false);
 
   return (
     <section className="practice-lab" aria-label="실제 업무자료 실습">
@@ -1040,11 +1037,11 @@ function PracticeLab({
         </article>
         <article>
           <span>2</span>
-          <p>오른쪽 실습 프롬프트를 ChatGPT 등 AI에 넣습니다.</p>
+          <p>실습 프롬프트를 복사해 AI에 넣습니다.</p>
         </article>
         <article>
           <span>3</span>
-          <p>AI가 만든 결과를 3번에 붙이고 4번에 메모합니다.</p>
+          <p>AI 답변을 붙이고 사람이 검토합니다.</p>
         </article>
       </div>
 
@@ -1057,37 +1054,61 @@ function PracticeLab({
         />
       </label>
 
-      <div className="prompt-compare">
-        <article>
-          <span>비교용: 막연한 요청</span>
-          <small>이 박스는 비교용입니다. 복사하지 않아도 됩니다.</small>
-          <pre>{beforePrompt}</pre>
-        </article>
-        <article className="is-practice-prompt">
-          <span>2. 실습 프롬프트</span>
-          <small>이 요청문을 복사해 ChatGPT, Claude, Copilot 등 사용하는 AI에 넣으면 됩니다.</small>
-          <pre>{practicePrompt}</pre>
-        </article>
-      </div>
+      <article className="practice-prompt-card">
+        <div className="practice-prompt-head">
+          <div>
+            <span>2. 실습 프롬프트</span>
+            <p>복사해서 ChatGPT, Claude, Copilot 등 사용하는 AI에 붙여넣습니다.</p>
+          </div>
+          <button onClick={onCopyPracticePrompt}>
+            <Copy size={16} />
+            복사
+          </button>
+        </div>
+        <pre className={isPromptExpanded ? "is-expanded" : ""}>{practicePrompt}</pre>
+        <div className="practice-prompt-actions">
+          <button onClick={() => setIsPromptExpanded((current) => !current)}>
+            {isPromptExpanded ? "접기" : "전체 보기"}
+          </button>
+        </div>
+      </article>
 
-      <div className="practice-review">
-        <label className="practice-field">
-          <span>3. AI가 만든 결과 또는 개선된 프롬프트 붙여넣기</span>
-          <AutoGrowTextarea
-            onChange={(event) => onChangeAiDraft(event.target.value)}
-            placeholder="2번 실습 프롬프트를 ChatGPT 등 AI에 넣은 뒤, 나온 결과나 개선된 프롬프트를 그대로 붙여넣습니다."
-            value={aiDraft}
-          />
-        </label>
-        <label className="practice-field">
+      <details className="before-prompt-details">
+        <summary>비교용 막연한 요청 보기</summary>
+        <pre>{beforePrompt}</pre>
+      </details>
+
+      <label className="practice-field">
+        <span>3. AI 답변 결과 붙여넣기</span>
+        <AutoGrowTextarea
+          onChange={(event) => onChangeAiDraft(event.target.value)}
+          placeholder="2번 실습 프롬프트를 AI에 넣은 뒤, AI가 작성한 답변 결과를 여기에 붙여넣습니다."
+          value={aiDraft}
+        />
+      </label>
+
+      <section className="human-review-panel" aria-label="사람 검토 및 개선 메모">
+        <div className="human-review-head">
           <span>4. 사람 검토 및 개선 메모</span>
+          <p>AI 답변을 그대로 쓰지 않고, 아래 기준으로 확인한 뒤 보완할 점을 남깁니다.</p>
+        </div>
+        <div className="review-grid">
+          {reviewChecklist.map((item) => (
+            <button className={checkedReviews.includes(item) ? "is-checked" : ""} key={item} onClick={() => onToggleReview(item)}>
+              <CheckCircle2 size={18} />
+              {item}
+            </button>
+          ))}
+        </div>
+        <label className="practice-field">
+          <span>개선 메모</span>
           <AutoGrowTextarea
             onChange={(event) => onChangeReviewMemo(event.target.value)}
-            placeholder="사실, 수치, 사내 기준, 민감정보, 실행 가능성을 검토한 뒤 다음에 보완할 점을 적습니다."
+            placeholder="예: 수치 출처 확인 필요, 사내 기준 문서 추가 필요, 다음에는 생산일보 양식을 기준 자료로 넣기."
             value={reviewMemo}
           />
         </label>
-      </div>
+      </section>
 
       <div className="record-save-panel">
         <div>
@@ -1096,7 +1117,7 @@ function PracticeLab({
         </div>
         <button disabled={!canSaveRecord} onClick={onSaveTrainingRecord}>
           <Save size={17} />
-          훈련 기록 저장
+          기록 저장하고 파일 받기
         </button>
       </div>
 
